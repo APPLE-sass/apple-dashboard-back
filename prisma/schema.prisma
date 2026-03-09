@@ -1,6 +1,6 @@
 // prisma/schema.prisma
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
   output     = "../node_modules/.prisma/client"
   engineType = "client"
 }
@@ -27,6 +27,25 @@ enum Categoria {
   Accesorios
 }
 
+enum TipoMovimiento {
+  ENTRADA
+  SALIDA
+  AJUSTE
+  TRANSFERENCIA
+}
+
+enum ImeiScanStatus {
+  SUCCESS
+  INVALID_IMEI
+}
+
+enum EstadoUnidad {
+  DISPONIBLE   // en stock, lista para vender
+  VENDIDA
+  RESERVADA
+  BAJA         // rota, perdida, etc.
+}
+
 // ─────────────────────────────────────────────
 // USERS
 // ─────────────────────────────────────────────
@@ -42,153 +61,176 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  // Relaciones futuras
   movimientos MovimientoStock[]
-
-  imeiScans  ImeiScanLog[]
+  imeiScans   ImeiScanLog[]
 
   @@index([email])
   @@map("users")
 }
 
 // ─────────────────────────────────────────────
-// PRODUCTOS
+// PUNTO DE VENTA
+// Reemplaza Sucursal. Es el local / tienda.
 // ─────────────────────────────────────────────
 
-model Producto {
-  id        String    @id @default(uuid())
-  modelo    String
-  categoria Categoria
-  memoria   String
-  color     String
-  precio    Decimal   @db.Decimal(10, 2)
-  bateria   Int?
-  usado     Boolean   @default(false)
-  stock     Int       @default(0)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+model PuntoDeVenta {
+  id        String   @id @default(uuid())
+  nombre    String
+  direccion String?
+  ciudad    String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  // Relaciones futuras
-  movimientos MovimientoStock[]
-  historial   HistorialProducto[]
-  proveedor   Proveedor?          @relation(fields: [proveedorId], references: [id])
-  proveedorId String?             @map("proveedor_id")
-  sucursal    Sucursal?           @relation(fields: [sucursalId], references: [id])
-  sucursalId  String?             @map("sucursal_id")
+  catalogoItems CatalogoItem[]
+  unidades      UnidadFisica[]
+  movimientos   MovimientoStock[]
 
+  @@map("puntos_de_venta")
+}
+
+// ─────────────────────────────────────────────
+// CATÁLOGO
+// Plantilla de modelos Apple disponibles en un PdV.
+// Define QUÉ productos se pueden vender, no cuántas unidades hay.
+// Ej: "iPhone 15 Pro · 256GB · Titanio Negro · $1299.99"
+// ─────────────────────────────────────────────
+
+model CatalogoItem {
+  id          String    @id @default(uuid())
+  categoria   Categoria
+  modelo      String                 // "iPhone 15 Pro"
+  memoria     String                 // "256GB"
+  color       String                 // "Titanio Negro"
+  precio      Decimal   @db.Decimal(10, 2)
+  descripcion String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  puntoDeVentaId String       @map("punto_de_venta_id")
+  puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
+
+  // Unidades físicas que corresponden a este ítem de catálogo
+  unidades UnidadFisica[]
+
+  @@index([puntoDeVentaId])
   @@index([categoria])
   @@index([modelo])
-  @@index([memoria])
-  @@index([color])
+  @@map("catalogo_items")
+}
+
+// ─────────────────────────────────────────────
+// UNIDAD FÍSICA
+// Cada iPhone real, con su propio IMEI.
+// Siempre vinculada a un ítem del catálogo.
+// ─────────────────────────────────────────────
+
+model UnidadFisica {
+  id           String       @id @default(uuid())
+  imei         String       @unique  // cada unidad tiene un IMEI único
+  bateria      Int?                  // % de batería al momento del ingreso
+  usado        Boolean      @default(false)
+  estado       EstadoUnidad @default(DISPONIBLE)
+  notas        String?
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  // Vinculada al ítem del catálogo que describe este modelo
+  catalogoItemId String       @map("catalogo_item_id")
+  catalogoItem   CatalogoItem @relation(fields: [catalogoItemId], references: [id])
+
+  // PdV donde está físicamente la unidad
+  puntoDeVentaId String       @map("punto_de_venta_id")
+  puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
+
+  // Proveedor opcional
+  proveedorId String?    @map("proveedor_id")
+  proveedor   Proveedor? @relation(fields: [proveedorId], references: [id])
+
+  historial   HistorialUnidad[]
+  movimientos MovimientoStock[]
+
+  @@index([imei])
+  @@index([catalogoItemId])
+  @@index([puntoDeVentaId])
+  @@index([estado])
   @@index([usado])
-  @@index([precio])
-  @@index([stock])
-  @@index([proveedorId])
-  @@index([sucursalId])
-  @@map("productos")
+  @@map("unidades_fisicas")
 }
 
 // ─────────────────────────────────────────────
-// MOVIMIENTOS DE STOCK (preparado para futuro)
+// MOVIMIENTOS DE STOCK
 // ─────────────────────────────────────────────
-
-enum TipoMovimiento {
-  ENTRADA
-  SALIDA
-  AJUSTE
-  TRANSFERENCIA
-}
 
 model MovimientoStock {
-  id          String         @id @default(uuid())
-  tipo        TipoMovimiento
-  cantidad    Int
-  motivo      String?
-  productoId  String         @map("producto_id")
-  producto    Producto       @relation(fields: [productoId], references: [id])
-  userId      String         @map("user_id")
-  user        User           @relation(fields: [userId], references: [id])
-  sucursalId  String?        @map("sucursal_id")
-  sucursal    Sucursal?      @relation(fields: [sucursalId], references: [id])
-  createdAt   DateTime       @default(now()) @map("created_at")
+  id           String         @id @default(uuid())
+  tipo         TipoMovimiento
+  cantidad     Int
+  motivo       String?
+  createdAt    DateTime       @default(now()) @map("created_at")
 
-  @@index([productoId])
+  unidadId       String?       @map("unidad_id")
+  unidad         UnidadFisica? @relation(fields: [unidadId], references: [id])
+
+  userId         String        @map("user_id")
+  user           User          @relation(fields: [userId], references: [id])
+
+  puntoDeVentaId String?       @map("punto_de_venta_id")
+  puntoDeVenta   PuntoDeVenta? @relation(fields: [puntoDeVentaId], references: [id])
+
+  @@index([unidadId])
   @@index([userId])
   @@index([createdAt])
   @@map("movimientos_stock")
 }
 
 // ─────────────────────────────────────────────
-// HISTORIAL DE CAMBIOS (auditoría)
+// HISTORIAL DE UNIDAD FÍSICA (auditoría)
 // ─────────────────────────────────────────────
 
-model HistorialProducto {
-  id         String   @id @default(uuid())
-  productoId String   @map("producto_id")
-  producto   Producto @relation(fields: [productoId], references: [id])
-  campo      String
-  valorAntes String?  @map("valor_antes")
-  valorDespues String? @map("valor_despues")
-  createdAt  DateTime @default(now()) @map("created_at")
+model HistorialUnidad {
+  id           String       @id @default(uuid())
+  unidadId     String       @map("unidad_id")
+  unidad       UnidadFisica @relation(fields: [unidadId], references: [id])
+  campo        String
+  valorAntes   String?      @map("valor_antes")
+  valorDespues String?      @map("valor_despues")
+  createdAt    DateTime     @default(now()) @map("created_at")
 
-  @@index([productoId])
-  @@map("historial_productos")
+  @@index([unidadId])
+  @@map("historial_unidades")
 }
 
 // ─────────────────────────────────────────────
-// PROVEEDORES (preparado para futuro)
+// PROVEEDORES
 // ─────────────────────────────────────────────
 
 model Proveedor {
-  id        String     @id @default(uuid())
+  id        String         @id @default(uuid())
   nombre    String
   contacto  String?
-  email     String?    @unique
+  email     String?        @unique
   telefono  String?
-  isActive  Boolean    @default(true) @map("is_active")
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  productos Producto[]
+  isActive  Boolean        @default(true) @map("is_active")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  unidades UnidadFisica[]
 
   @@map("proveedores")
 }
 
 // ─────────────────────────────────────────────
-// SUCURSALES (preparado para futuro)
+// IMEI SCAN LOG
 // ─────────────────────────────────────────────
-
-model Sucursal {
-  id          String            @id @default(uuid())
-  nombre      String
-  direccion   String?
-  ciudad      String?
-  isActive    Boolean           @default(true) @map("is_active")
-  createdAt   DateTime          @default(now()) @map("created_at")
-  updatedAt   DateTime          @updatedAt @map("updated_at")
-  productos   Producto[]
-  movimientos MovimientoStock[]
-
-  @@map("sucursales")
-}
-
-// ─────────────────────────────────────────────
-// IMEI (codigo id de productos)
-// ─────────────────────────────────────────────
-
-enum ImeiScanStatus {
-  SUCCESS
-  INVALID_IMEI   // reserved for future server-side re-validation if needed
-}
 
 model ImeiScanLog {
   id        String         @id @default(uuid())
   imei      String
   status    ImeiScanStatus @default(SUCCESS)
-
-  // Relations
   userId    String         @map("user_id")
   user      User           @relation(fields: [userId], references: [id])
-
   createdAt DateTime       @default(now()) @map("created_at")
 
   @@index([imei])

@@ -1,17 +1,8 @@
 // src/products/products.controller.ts
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-  ParseUUIDPipe,
+  Controller, Get, Post, Patch, Delete,
+  Body, Param, Query, HttpCode, HttpStatus,
+  UseGuards, ParseUUIDPipe,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { ProductsService } from './products.service';
@@ -36,6 +27,16 @@ export class ProductsController {
   @Get()
   findAll(@Query() filters: FilterProductsDto) {
     return this.productsService.findAll(filters);
+  }
+
+  /**
+   * GET /products/imei/:imei
+   * Busca un producto por su IMEI exacto.
+   * Útil para que el front verifique si un IMEI escaneado ya está registrado.
+   */
+  @Get('imei/:imei')
+  findByImei(@Param('imei') imei: string) {
+    return this.productsService.findByImei(imei);
   }
 
   @Get(':id')

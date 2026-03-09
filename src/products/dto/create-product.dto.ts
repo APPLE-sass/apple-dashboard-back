@@ -1,15 +1,8 @@
 // src/products/dto/create-product.dto.ts
 import {
-  IsString,
-  IsEnum,
-  IsDecimal,
-  IsInt,
-  IsBoolean,
-  IsOptional,
-  Min,
-  MinLength,
-  MaxLength,
-  IsNumber,
+  IsString, IsEnum, IsInt, IsBoolean,
+  IsOptional, Min, MinLength, MaxLength,
+  IsNumber, Matches, Length,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Categoria } from '@prisma/client';
@@ -55,11 +48,35 @@ export class CreateProductDto {
   @Type(() => Number)
   stock: number;
 
+  /**
+   * IMEI de la unidad física (15 dígitos, único por producto).
+   * El frontend lo captura con @zxing/library o entrada manual.
+   * La validación Luhn se aplica en el pipe igual que en /imei/process.
+   */
+  @IsOptional()
+  @IsString()
+  @Length(15, 15, { message: 'El IMEI debe tener exactamente 15 dígitos' })
+  @Matches(/^\d{15}$/, { message: 'El IMEI solo debe contener dígitos numéricos' })
+  imei?: string;
+
+  /**
+   * ID del ítem del catálogo al que pertenece esta unidad.
+   * Opcional — un producto puede existir sin estar en el catálogo.
+   */
+  @IsOptional()
+  @IsString()
+  catalogoItemId?: string;
+
+  /**
+   * ID del Punto de Venta donde se encuentra el producto.
+   * Reemplaza sucursalId.
+   */
+  @IsOptional()
+  @IsString()
+  puntoDeVentaId?: string;
+
+  // ── DEPRECATED — conservado por compatibilidad, ignorar en nuevas altas ──
   @IsOptional()
   @IsString()
   proveedorId?: string;
-
-  @IsOptional()
-  @IsString()
-  sucursalId?: string;
 }

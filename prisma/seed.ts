@@ -1,146 +1,52 @@
 // prisma/seed.ts
-import { PrismaClient, Role, Categoria } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import { PrismaClient, Categoria } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import * as pg from 'pg';
+import * as dotenv from 'dotenv';
 
-const prisma = new PrismaClient();
+dotenv.config();
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Iniciando seed...');
+  console.log('🌱 Iniciando seed de catálogo...');
 
-  // ─── Admin user ───────────────────────────────
-  const adminPassword = await bcrypt.hash('Admin1234!', 10);
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@applestock.com' },
-    update: {},
-    create: {
-      email: 'admin@applestock.com',
-      nombre: 'Administrador',
-      passwordHash: adminPassword,
-      role: Role.ADMIN,
-    },
-  });
-
-  // ─── Vendedor user ────────────────────────────
-  const vendedorPassword = await bcrypt.hash('Vendedor1234!', 10);
-  const vendedor = await prisma.user.upsert({
-    where: { email: 'vendedor@applestock.com' },
-    update: {},
-    create: {
-      email: 'vendedor@applestock.com',
-      nombre: 'Juan Vendedor',
-      passwordHash: vendedorPassword,
-      role: Role.VENDEDOR,
-    },
-  });
-
-  console.log('✅ Usuarios creados:', { admin: admin.email, vendedor: vendedor.email });
-
-  // ─── Sucursal ─────────────────────────────────
-  const sucursal = await prisma.sucursal.upsert({
+  // ─── Punto de Venta ───────────────────────────────────────────────────────
+  const pdv = await prisma.puntoDeVenta.upsert({
     where: { id: '00000000-0000-0000-0000-000000000001' },
     update: {},
     create: {
       id: '00000000-0000-0000-0000-000000000001',
-      nombre: 'Casa Central',
-      direccion: 'Av. Corrientes 1234',
-      ciudad: 'Buenos Aires',
+      nombre: 'Local Centro',
+      direccion: 'Bonifacio Córdoba 678',
+      ciudad: 'San Fernando del Valle de Catamarca',
     },
   });
 
-  console.log('✅ Sucursal creada:', sucursal.nombre);
+  console.log('✅ Punto de Venta:', pdv.nombre);
 
-  // ─── Productos ────────────────────────────────
-  const productos = [
-    {
-      modelo: 'iPhone 15 Pro',
-      categoria: Categoria.iPhone,
-      memoria: '256GB',
-      color: 'Titanio Negro',
-      precio: 1299.99,
-      bateria: 100,
-      usado: false,
-      stock: 15,
-    },
-    {
-      modelo: 'iPhone 15 Pro',
-      categoria: Categoria.iPhone,
-      memoria: '512GB',
-      color: 'Titanio Natural',
-      precio: 1499.99,
-      bateria: 100,
-      usado: false,
-      stock: 8,
-    },
-    {
-      modelo: 'iPhone 14',
-      categoria: Categoria.iPhone,
-      memoria: '128GB',
-      color: 'Medianoche',
-      precio: 799.99,
-      bateria: 85,
-      usado: true,
-      stock: 5,
-    },
-    {
-      modelo: 'MacBook Pro 14"',
-      categoria: Categoria.Mac,
-      memoria: '512GB',
-      color: 'Plata',
-      precio: 1999.99,
-      bateria: 100,
-      usado: false,
-      stock: 4,
-    },
-    {
-      modelo: 'iPad Pro 12.9"',
-      categoria: Categoria.iPad,
-      memoria: '256GB',
-      color: 'Gris Espacial',
-      precio: 1099.99,
-      bateria: 95,
-      usado: false,
-      stock: 7,
-    },
-    {
-      modelo: 'Apple Watch Series 9',
-      categoria: Categoria.Watch,
-      memoria: '64GB',
-      color: 'Medianoche',
-      precio: 399.99,
-      bateria: 100,
-      usado: false,
-      stock: 12,
-    },
-    {
-      modelo: 'AirPods Pro 2da Gen',
-      categoria: Categoria.AirPods,
-      memoria: '0GB',
-      color: 'Blanco',
-      precio: 249.99,
-      bateria: 100,
-      usado: false,
-      stock: 20,
-    },
-    {
-      modelo: 'Funda MagSafe iPhone 15',
-      categoria: Categoria.Accesorios,
-      memoria: 'N/A',
-      color: 'Rosa',
-      precio: 49.99,
-      bateria: null,
-      usado: false,
-      stock: 30,
-    },
+  // ─── Catálogo ─────────────────────────────────────────────────────────────
+  const catalogoData = [
+    { categoria: Categoria.iPhone,     modelo: 'iPhone 15 Pro',           memoria: '256GB', color: 'Titanio Negro',   precio: 1299.99 },
+    { categoria: Categoria.iPhone,     modelo: 'iPhone 15 Pro',           memoria: '512GB', color: 'Titanio Natural', precio: 1499.99 },
+    { categoria: Categoria.iPhone,     modelo: 'iPhone 14',               memoria: '128GB', color: 'Medianoche',      precio: 799.99  },
+    { categoria: Categoria.Mac,        modelo: 'MacBook Pro 14"',         memoria: '512GB', color: 'Plata',           precio: 1999.99 },
+    { categoria: Categoria.iPad,       modelo: 'iPad Pro 12.9"',          memoria: '256GB', color: 'Gris Espacial',   precio: 1099.99 },
+    { categoria: Categoria.Watch,      modelo: 'Apple Watch Series 9',    memoria: '64GB',  color: 'Medianoche',      precio: 399.99  },
+    { categoria: Categoria.AirPods,    modelo: 'AirPods Pro 2da Gen',     memoria: 'N/A',   color: 'Blanco',          precio: 249.99  },
+    { categoria: Categoria.Accesorios, modelo: 'Funda MagSafe iPhone 15', memoria: 'N/A',   color: 'Rosa',            precio: 49.99   },
   ];
 
-  for (const p of productos) {
-    await prisma.producto.create({
-      data: { ...p, precio: p.precio, sucursalId: sucursal.id },
+  for (const item of catalogoData) {
+    await prisma.catalogoItem.create({
+      data: { ...item, puntoDeVentaId: pdv.id },
     });
   }
 
-  console.log(`✅ ${productos.length} productos creados`);
-  console.log('🎉 Seed completado exitosamente');
+  console.log(`✅ ${catalogoData.length} ítems de catálogo creados`);
+  console.log('🎉 Seed completado');
 }
 
 main()
@@ -150,4 +56,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });
