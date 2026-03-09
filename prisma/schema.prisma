@@ -45,6 +45,8 @@ model User {
   // Relaciones futuras
   movimientos MovimientoStock[]
 
+  imeiScans  ImeiScanLog[]
+
   @@index([email])
   @@map("users")
 }
@@ -167,4 +169,31 @@ model Sucursal {
   movimientos MovimientoStock[]
 
   @@map("sucursales")
+}
+
+// ─────────────────────────────────────────────
+// IMEI (codigo id de productos)
+// ─────────────────────────────────────────────
+
+enum ImeiScanStatus {
+  SUCCESS
+  INVALID_IMEI   // reserved for future server-side re-validation if needed
+}
+
+model ImeiScanLog {
+  id        String         @id @default(uuid())
+  imei      String
+  status    ImeiScanStatus @default(SUCCESS)
+
+  // Relations
+  userId    String         @map("user_id")
+  user      User           @relation(fields: [userId], references: [id])
+
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  @@index([imei])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("imei_scan_logs")
 }

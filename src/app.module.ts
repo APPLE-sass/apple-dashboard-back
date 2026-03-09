@@ -7,6 +7,7 @@ import { ProductsModule } from './products/products.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { LoggingMiddleware } from './common/middleware/logging.middleware';
 import { envValidation } from './config/env.validation';
+import { ImeiModule } from './imei/imei.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { envValidation } from './config/env.validation';
     AuthModule,
     UsersModule,
     ProductsModule,
+    ImeiModule,
   ],
 })
 export class AppModule implements NestModule {
