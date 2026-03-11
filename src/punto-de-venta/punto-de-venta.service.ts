@@ -1,15 +1,11 @@
-// src/punto-de-venta/punto-de-venta.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePdvDto } from './dto/create-pdv.dto';
 import { UpdatePdvDto } from './dto/update-pdv';
 
 @Injectable()
 export class PuntoDeVentaService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  // ─── CRUD ─────────────────────────────────────────────────────────────────
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(dto: CreatePdvDto) {
     return this.prisma.puntoDeVenta.create({ data: dto });
@@ -23,11 +19,96 @@ export class PuntoDeVentaService {
         _count: {
           select: {
             catalogoItems: { where: { isActive: true } },
-            unidades: true,   // ← era "productos"
+            dispositivos: true,
+            accesorios: { where: { isActive: true } },
           },
         },
       },
     });
+  }
+
+  async findUnidades(
+    id: string,
+    filters: {
+      categoria?: string;
+      usado?: boolean;
+      page: number;
+      limit: number;
+    },
+  ) {
+    await this.findOne(id); // valida que el PdV existe
+
+    const { categoria, usado, page, limit } = filters;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      puntoDeVentaId: id,
+      ...(usado !== undefined && { usado }),
+      ...(categoria && {
+        catalogoItem: {
+          catalogoGlobal: { categoria: categoria as any },
+        },
+      }),
+    };
+
+    const [dispositivos, accesorios, totalDispositivos, totalAccesorios] =
+      await Promise.all([
+        this.prisma.dispositivoStock.findMany({
+          where,
+          skip,
+          take: limit,
+          include: {
+            catalogoItem: { include: { catalogoGlobal: true } },
+            proveedor: { select: { id: true, nombre: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.accesorioStock.findMany({
+          where: {
+            puntoDeVentaId: id,
+            isActive: true,
+            ...(categoria && {
+              catalogoItem: {
+                catalogoGlobal: { categoria: categoria as any },
+              },
+            }),
+          },
+          skip,
+          take: limit,
+          include: {
+            catalogoItem: { include: { catalogoGlobal: true } },
+          },
+        }),
+        this.prisma.dispositivoStock.count({ where }),
+        this.prisma.accesorioStock.count({
+          where: {
+            puntoDeVentaId: id,
+            isActive: true,
+            ...(categoria && {
+              catalogoItem: {
+                catalogoGlobal: { categoria: categoria as any },
+              },
+            }),
+          },
+        }),
+      ]);
+
+    return {
+      dispositivos: {
+        data: dispositivos,
+        total: totalDispositivos,
+        page,
+        limit,
+        totalPages: Math.ceil(totalDispositivos / limit),
+      },
+      accesorios: {
+        data: accesorios,
+        total: totalAccesorios,
+        page,
+        limit,
+        totalPages: Math.ceil(totalAccesorios / limit),
+      },
+    };
   }
 
   async findOne(id: string) {
@@ -37,7 +118,8 @@ export class PuntoDeVentaService {
         _count: {
           select: {
             catalogoItems: { where: { isActive: true } },
-            unidades: true,   // ← era "productos"
+            dispositivos: true,
+            accesorios: { where: { isActive: true } },
           },
         },
       },
@@ -53,57 +135,7 @@ export class PuntoDeVentaService {
 
   async remove(id: string) {
     await this.findOne(id);
-    await this.prisma.puntoDeVenta.update({
-      where: { id },
-      data: { isActive: false },
-    });
+    await this.prisma.puntoDeVenta.update({ where: { id }, data: { isActive: false } });
     return { message: `Punto de venta "${id}" desactivado correctamente` };
-  }
-
-  // ─── Unidades físicas del PdV ──────────────────────────────────────────────
-
-  async findUnidades(
-    id: string,
-    filters: { categoria?: string; usado?: boolean; estado?: string; page?: number; limit?: number },
-  ) {
-    await this.findOne(id);
-
-    const { categoria, usado, estado, page = 1, limit = 20 } = filters;
-
-    const where: Prisma.UnidadFisicaWhereInput = {
-      puntoDeVentaId: id,
-      ...(usado !== undefined && { usado }),
-      ...(estado && { estado: estado as any }),
-      ...(categoria && {
-        catalogoItem: { categoria: categoria as any },
-      }),
-    };
-
-    const skip = (page - 1) * limit;
-
-    const [total, items] = await this.prisma.$transaction([
-      this.prisma.unidadFisica.count({ where }),
-      this.prisma.unidadFisica.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          catalogoItem: {
-            select: { id: true, modelo: true, categoria: true, precio: true, memoria: true, color: true },
-          },
-        },
-      }),
-    ]);
-
-    return {
-      items,
-      meta: {
-        total, page, limit,
-        totalPages: Math.ceil(total / limit),
-        hasNextPage: page < Math.ceil(total / limit),
-        hasPrevPage: page > 1,
-      },
-    };
   }
 }

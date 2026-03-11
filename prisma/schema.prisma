@@ -9,10 +9,6 @@ datasource db {
   provider = "postgresql"
 }
 
-// ─────────────────────────────────────────────
-// ENUMS
-// ─────────────────────────────────────────────
-
 enum Role {
   ADMIN
   VENDEDOR
@@ -39,16 +35,12 @@ enum ImeiScanStatus {
   INVALID_IMEI
 }
 
-enum EstadoUnidad {
-  DISPONIBLE   // en stock, lista para vender
-  VENDIDA
-  RESERVADA
-  BAJA         // rota, perdida, etc.
+enum EstadoDispositivo {
+  DISPONIBLE
+  VENDIDO
+  RESERVADO
+  BAJA
 }
-
-// ─────────────────────────────────────────────
-// USERS
-// ─────────────────────────────────────────────
 
 model User {
   id           String   @id @default(uuid())
@@ -61,17 +53,11 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  movimientos MovimientoStock[]
-  imeiScans   ImeiScanLog[]
+  imeiScans ImeiScanLog[]
 
   @@index([email])
   @@map("users")
 }
-
-// ─────────────────────────────────────────────
-// PUNTO DE VENTA
-// Reemplaza Sucursal. Es el local / tienda.
-// ─────────────────────────────────────────────
 
 model PuntoDeVenta {
   id        String   @id @default(uuid())
@@ -83,147 +69,135 @@ model PuntoDeVenta {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   catalogoItems CatalogoItem[]
-  unidades      UnidadFisica[]
-  movimientos   MovimientoStock[]
+  dispositivos  DispositivoStock[]
+  accesorios    AccesorioStock[]
 
   @@map("puntos_de_venta")
 }
 
-// ─────────────────────────────────────────────
-// CATÁLOGO
-// Plantilla de modelos Apple disponibles en un PdV.
-// Define QUÉ productos se pueden vender, no cuántas unidades hay.
-// Ej: "iPhone 15 Pro · 256GB · Titanio Negro · $1299.99"
-// ─────────────────────────────────────────────
+// Plantilla maestra global. No pertenece a ningún PdV.
+model CatalogoGlobal {
+  id             String    @id @default(uuid())
+  categoria      Categoria
+  modelo         String
+  descripcion    String?
+  precioSugerido Decimal   @db.Decimal(10, 2) @map("precio_sugerido")
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
+  catalogoItems CatalogoItem[]
+
+  @@index([categoria])
+  @@index([modelo])
+  @@map("catalogo_global")
+}
+
+// Reflejo de una plantilla global en un PdV específico.
 model CatalogoItem {
-  id          String    @id @default(uuid())
-  categoria   Categoria
-  modelo      String                 // "iPhone 15 Pro"
-  memoria     String                 // "256GB"
-  color       String                 // "Titanio Negro"
-  precio      Decimal   @db.Decimal(10, 2)
-  descripcion String?
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id          String   @id @default(uuid())
+  precioLocal Decimal? @db.Decimal(10, 2) @map("precio_local")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  catalogoGlobalId String         @map("catalogo_global_id")
+  catalogoGlobal   CatalogoGlobal @relation(fields: [catalogoGlobalId], references: [id])
 
   puntoDeVentaId String       @map("punto_de_venta_id")
   puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
 
-  // Unidades físicas que corresponden a este ítem de catálogo
-  unidades UnidadFisica[]
+  dispositivos DispositivoStock[]
+  accesorios   AccesorioStock[]
 
+  @@unique([catalogoGlobalId, puntoDeVentaId])
+  @@index([catalogoGlobalId])
   @@index([puntoDeVentaId])
-  @@index([categoria])
-  @@index([modelo])
   @@map("catalogo_items")
 }
 
-// ─────────────────────────────────────────────
-// UNIDAD FÍSICA
-// Cada iPhone real, con su propio IMEI.
-// Siempre vinculada a un ítem del catálogo.
-// ─────────────────────────────────────────────
+// Cada dispositivo real con IMEI único (iPhone, iPad, Mac, etc.)
+  model DispositivoStock {
+    id        String            @id @default(uuid())
+    imei      String            @unique
+    memoria   String?
+    color     String?
+    bateria   Int?
+    usado     Boolean           @default(false)
+    estado    EstadoDispositivo @default(DISPONIBLE)
+    notas     String?
+    createdAt DateTime          @default(now()) @map("created_at")
+    updatedAt DateTime          @updatedAt @map("updated_at")
 
-model UnidadFisica {
-  id           String       @id @default(uuid())
-  imei         String       @unique  // cada unidad tiene un IMEI único
-  bateria      Int?                  // % de batería al momento del ingreso
-  usado        Boolean      @default(false)
-  estado       EstadoUnidad @default(DISPONIBLE)
-  notas        String?
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
+    catalogoItemId String       @map("catalogo_item_id")
+    catalogoItem   CatalogoItem @relation(fields: [catalogoItemId], references: [id])
 
-  // Vinculada al ítem del catálogo que describe este modelo
+    puntoDeVentaId String       @map("punto_de_venta_id")
+    puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
+
+    proveedorId String?    @map("proveedor_id")
+    proveedor   Proveedor? @relation(fields: [proveedorId], references: [id])
+
+    historial HistorialDispositivo[]
+
+    @@index([imei])
+    @@index([catalogoItemId])
+    @@index([puntoDeVentaId])
+    @@index([estado])
+    @@index([usado])
+    @@map("dispositivos_stock")
+  }
+// Fundas, templados, cables, etc. — se manejan por cantidad
+model AccesorioStock {
+  id          String   @id @default(uuid())
+  sku         String?
+  color       String?
+  descripcion String?
+  precio      Decimal  @db.Decimal(10, 2)
+  cantidad    Int      @default(0)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
   catalogoItemId String       @map("catalogo_item_id")
   catalogoItem   CatalogoItem @relation(fields: [catalogoItemId], references: [id])
 
-  // PdV donde está físicamente la unidad
   puntoDeVentaId String       @map("punto_de_venta_id")
   puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
 
-  // Proveedor opcional
-  proveedorId String?    @map("proveedor_id")
-  proveedor   Proveedor? @relation(fields: [proveedorId], references: [id])
-
-  historial   HistorialUnidad[]
-  movimientos MovimientoStock[]
-
-  @@index([imei])
   @@index([catalogoItemId])
   @@index([puntoDeVentaId])
-  @@index([estado])
-  @@index([usado])
-  @@map("unidades_fisicas")
+  @@index([sku])
+  @@map("accesorios_stock")
 }
 
-// ─────────────────────────────────────────────
-// MOVIMIENTOS DE STOCK
-// ─────────────────────────────────────────────
+model HistorialDispositivo {
+  id            String           @id @default(uuid())
+  dispositivoId String           @map("dispositivo_id")
+  dispositivo   DispositivoStock @relation(fields: [dispositivoId], references: [id])
+  campo         String
+  valorAntes    String?          @map("valor_antes")
+  valorDespues  String?          @map("valor_despues")
+  createdAt     DateTime         @default(now()) @map("created_at")
 
-model MovimientoStock {
-  id           String         @id @default(uuid())
-  tipo         TipoMovimiento
-  cantidad     Int
-  motivo       String?
-  createdAt    DateTime       @default(now()) @map("created_at")
-
-  unidadId       String?       @map("unidad_id")
-  unidad         UnidadFisica? @relation(fields: [unidadId], references: [id])
-
-  userId         String        @map("user_id")
-  user           User          @relation(fields: [userId], references: [id])
-
-  puntoDeVentaId String?       @map("punto_de_venta_id")
-  puntoDeVenta   PuntoDeVenta? @relation(fields: [puntoDeVentaId], references: [id])
-
-  @@index([unidadId])
-  @@index([userId])
-  @@index([createdAt])
-  @@map("movimientos_stock")
+  @@index([dispositivoId])
+  @@map("historial_dispositivos")
 }
-
-// ─────────────────────────────────────────────
-// HISTORIAL DE UNIDAD FÍSICA (auditoría)
-// ─────────────────────────────────────────────
-
-model HistorialUnidad {
-  id           String       @id @default(uuid())
-  unidadId     String       @map("unidad_id")
-  unidad       UnidadFisica @relation(fields: [unidadId], references: [id])
-  campo        String
-  valorAntes   String?      @map("valor_antes")
-  valorDespues String?      @map("valor_despues")
-  createdAt    DateTime     @default(now()) @map("created_at")
-
-  @@index([unidadId])
-  @@map("historial_unidades")
-}
-
-// ─────────────────────────────────────────────
-// PROVEEDORES
-// ─────────────────────────────────────────────
 
 model Proveedor {
-  id        String         @id @default(uuid())
+  id        String   @id @default(uuid())
   nombre    String
   contacto  String?
-  email     String?        @unique
+  email     String?  @unique
   telefono  String?
-  isActive  Boolean        @default(true) @map("is_active")
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime       @updatedAt @map("updated_at")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  unidades UnidadFisica[]
+  dispositivos DispositivoStock[]
 
   @@map("proveedores")
 }
-
-// ─────────────────────────────────────────────
-// IMEI SCAN LOG
-// ─────────────────────────────────────────────
 
 model ImeiScanLog {
   id        String         @id @default(uuid())
