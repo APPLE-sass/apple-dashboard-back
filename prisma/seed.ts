@@ -1,4 +1,5 @@
-import { PrismaClient, Categoria, Role, EstadoDispositivo } from '@prisma/client';
+// prisma/seed.ts
+import { PrismaClient, Role } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as pg from 'pg';
 import * as dotenv from 'dotenv';
@@ -13,19 +14,26 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('🌱 Iniciando seed...');
 
-  // ─── Usuario Admin ────────────────────────────────────────────────────────
-  const passwordHash = await bcrypt.hash('Admin1234!', 10);
-  const admin = await prisma.user.upsert({
-    where: { email: 'marcos@todoapple.com' },
-    update: {},
-    create: {
-      email: 'marcos@todoapple.com',
-      nombre: 'Marcos',
-      passwordHash,
-      role: Role.ADMIN,
-    },
-  });
-  console.log('✅ Usuario admin:', admin.email);
+  // ─── Usuarios Admin ───────────────────────────────────────────────────────
+  const users = [
+    { email: 'marcos@todoapple.com', nombre: 'Marcos' },
+    { email: 'store@todoapple.com',  nombre: 'Store'  },
+  ];
+
+  for (const u of users) {
+    const passwordHash = await bcrypt.hash(u.email, 10);
+    const user = await prisma.user.upsert({
+      where:  { email: u.email },
+      update: {},
+      create: {
+        email: u.email,
+        nombre: u.nombre,
+        passwordHash,
+        role: Role.ADMIN,
+      },
+    });
+    console.log(`✅ Usuario admin: ${user.email} / ${u.email}`);
+  }
 
   // ─── Punto de Venta ───────────────────────────────────────────────────────
   const pdv = await prisma.puntoDeVenta.upsert({
@@ -40,114 +48,173 @@ async function main() {
   });
   console.log('✅ PdV:', pdv.nombre);
 
-  // ─── Catálogo Global ──────────────────────────────────────────────────────
-  const globalItemsData = [
-    { categoria: Categoria.iPhone,     modelo: 'iPhone 15 Pro',           precioSugerido: 1299.99 },
-    { categoria: Categoria.iPhone,     modelo: 'iPhone 15',               precioSugerido: 999.99  },
-    { categoria: Categoria.iPhone,     modelo: 'iPhone 14',               precioSugerido: 799.99  },
-    { categoria: Categoria.Mac,        modelo: 'MacBook Pro 14"',         precioSugerido: 1999.99 },
-    { categoria: Categoria.iPad,       modelo: 'iPad Pro 12.9"',          precioSugerido: 1099.99 },
-    { categoria: Categoria.Watch,      modelo: 'Apple Watch Series 9',    precioSugerido: 399.99  },
-    { categoria: Categoria.AirPods,    modelo: 'AirPods Pro 2da Gen',     descripcion: 'Con cancelación activa de ruido', precioSugerido: 249.99 },
-    { categoria: Categoria.Accesorios, modelo: 'Funda MagSafe iPhone 15', descripcion: 'Funda de silicona con MagSafe', precioSugerido: 49.99 },
-    { categoria: Categoria.Accesorios, modelo: 'Templado iPhone 15',      descripcion: 'Vidrio templado 9H',            precioSugerido: 19.99 },
-    { categoria: Categoria.Accesorios, modelo: 'Cable USB-C 2m',          descripcion: 'Cable trenzado USB-C a USB-C',  precioSugerido: 29.99 },
+  // ─── Accesorios de marca ──────────────────────────────────────────────────
+  console.log('\n🎒 Cargando accesorios de marca...');
+
+  const accesoriosData = [
+    {
+      nombre: 'iPhone 15',
+      modelo: 'Pro',
+      tipo: 'Funda',
+      descripcion: 'Funda de silicona con MagSafe',
+      cantidad: 16,
+      colores: ['Rosa', 'Negro', 'Azul'],
+      imagenes: [
+        'https://store.storeimages.cdn-apple.com/funda-magsafe-rosa.jpg',
+        'https://store.storeimages.cdn-apple.com/funda-magsafe-negro.jpg',
+      ],
+    },
+    {
+      nombre: 'iPhone 15',
+      modelo: 'Standard',
+      tipo: 'Templado',
+      descripcion: 'Vidrio templado 9H',
+      cantidad: 20,
+      colores: [],
+      imagenes: [
+        'https://store.storeimages.cdn-apple.com/templado-iphone15.jpg',
+      ],
+    },
+    {
+      nombre: 'iPhone 14',
+      modelo: 'Standard',
+      tipo: 'Funda',
+      descripcion: 'Funda transparente antigolpes',
+      cantidad: 10,
+      colores: ['Transparente', 'Negro'],
+      imagenes: [
+        'https://store.storeimages.cdn-apple.com/funda-iphone14-transparente.jpg',
+      ],
+    },
+    {
+      nombre: 'AirPods Pro',
+      modelo: '2da Gen',
+      tipo: 'Funda',
+      descripcion: 'Funda de silicona para AirPods Pro',
+      cantidad: 8,
+      colores: ['Blanco', 'Negro'],
+      imagenes: [
+        'https://store.storeimages.cdn-apple.com/funda-airpods-pro.jpg',
+      ],
+    },
+    {
+      nombre: 'Apple Watch',
+      modelo: 'Series 9',
+      tipo: 'Malla',
+      descripcion: 'Malla deportiva original',
+      cantidad: 6,
+      colores: ['Medianoche', 'Starlight', 'Rojo'],
+      imagenes: [
+        'https://store.storeimages.cdn-apple.com/malla-watch-s9.jpg',
+        'https://store.storeimages.cdn-apple.com/malla-watch-s9-colores.jpg',
+      ],
+    },
   ];
 
-  // Crear globales y sus reflejos en el PdV, guardando los CatalogoItem ids
-  const catalogoItemIds: Record<string, string> = {};
-
-  for (const item of globalItemsData) {
-    const global = await prisma.catalogoGlobal.create({ data: item });
-    const catalogoItem = await prisma.catalogoItem.create({
-      data: { catalogoGlobalId: global.id, puntoDeVentaId: pdv.id },
-    });
-    catalogoItemIds[item.modelo] = catalogoItem.id;
-    console.log(`  ✅ Global + reflejo: ${item.modelo}`);
-  }
-
-  // ─── Dispositivos de ejemplo ──────────────────────────────────────────────
-  console.log('\n📱 Cargando dispositivos...');
-
-  const dispositivos = [
-    // iPhone 15 Pro — varios colores y memorias
-    { modelo: 'iPhone 15 Pro', imei: '354678901234563', memoria: '256GB', color: 'Titanio Negro',   bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 15 Pro', imei: '354678901234571', memoria: '256GB', color: 'Titanio Blanco',  bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 15 Pro', imei: '354678901234589', memoria: '512GB', color: 'Titanio Natural', bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 15 Pro', imei: '354678901234597', memoria: '512GB', color: 'Titanio Azul',    bateria: 87,  usado: true,  estado: EstadoDispositivo.DISPONIBLE, notas: 'Caja abierta, sin uso real' },
-    // iPhone 15
-    { modelo: 'iPhone 15',     imei: '354678901234605', memoria: '128GB', color: 'Rosa',            bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 15',     imei: '354678901234613', memoria: '128GB', color: 'Amarillo',        bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 15',     imei: '354678901234621', memoria: '256GB', color: 'Negro',           bateria: 92,  usado: true,  estado: EstadoDispositivo.DISPONIBLE, notas: 'Usado 3 meses, impecable' },
-    // iPhone 14
-    { modelo: 'iPhone 14',     imei: '354678901234639', memoria: '128GB', color: 'Medianoche',      bateria: 89,  usado: true,  estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 14',     imei: '354678901234647', memoria: '256GB', color: 'Blanco Estelar',  bateria: 95,  usado: true,  estado: EstadoDispositivo.RESERVADO,  notas: 'Reservado para cliente' },
-    // MacBook Pro
-    { modelo: 'MacBook Pro 14"', imei: '354678901234654', memoria: '512GB', color: 'Plata',         bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    // iPad Pro
-    { modelo: 'iPad Pro 12.9"',  imei: '354678901234662', memoria: '256GB', color: 'Gris Espacial', bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    // Apple Watch
-    { modelo: 'Apple Watch Series 9', imei: '354678901234670', memoria: '32GB', color: 'Medianoche', bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'Apple Watch Series 9', imei: '354678901234688', memoria: '32GB', color: 'Starlight',  bateria: 78,  usado: true,  estado: EstadoDispositivo.DISPONIBLE, notas: 'Con malla original' },
-  ];
-
-  for (const d of dispositivos) {
-    const catalogoItemId = catalogoItemIds[d.modelo];
-    await prisma.dispositivoStock.create({
+  for (const a of accesoriosData) {
+    const accesorio = await prisma.accesorio.create({
       data: {
-        imei:           d.imei,
-        memoria:        d.memoria,
-        color:          d.color,
-        bateria:        d.bateria,
-        usado:          d.usado,
-        estado:         d.estado,
-        notas:          d.notas ?? null,
-        catalogoItemId,
+        nombre: a.nombre,
+        modelo: a.modelo,
+        tipo: a.tipo,
+        descripcion: a.descripcion,
+        cantidad: a.cantidad,
         puntoDeVentaId: pdv.id,
+        colores: {
+          create: a.colores.map((color) => ({ color })),
+        },
+        imagenes: {
+          create: a.imagenes.map((url, i) => ({ url, orden: i })),
+        },
       },
     });
-    console.log(`  ✅ ${d.modelo} ${d.memoria} ${d.color} — IMEI ${d.imei}`);
+    console.log(`  ✅ ${accesorio.nombre} ${accesorio.modelo} — ${a.tipo}`);
   }
 
-  // ─── Accesorios de ejemplo ────────────────────────────────────────────────
-  console.log('\n🎒 Cargando accesorios...');
+  // ─── Sub Accesorios (genéricos sin marca) ─────────────────────────────────
+  console.log('\n📦 Cargando sub accesorios genéricos...');
 
-  const accesorios = [
-    // Fundas MagSafe
-    { modelo: 'Funda MagSafe iPhone 15', sku: 'FMS15-ROS', color: 'Rosa',    descripcion: 'Funda silicona MagSafe Rosa',    precio: 49.99, cantidad: 8  },
-    { modelo: 'Funda MagSafe iPhone 15', sku: 'FMS15-NEG', color: 'Negro',   descripcion: 'Funda silicona MagSafe Negro',   precio: 49.99, cantidad: 5  },
-    { modelo: 'Funda MagSafe iPhone 15', sku: 'FMS15-AZU', color: 'Azul',    descripcion: 'Funda silicona MagSafe Azul',    precio: 49.99, cantidad: 3  },
-    // Templados
-    { modelo: 'Templado iPhone 15',      sku: 'TPL15-STD', color: null,      descripcion: 'Vidrio templado 9H iPhone 15',   precio: 19.99, cantidad: 20 },
-    // AirPods
-    { modelo: 'AirPods Pro 2da Gen',     sku: 'APP2-BOX',  color: 'Blanco',  descripcion: 'AirPods Pro 2da gen sellados',   precio: 249.99, cantidad: 4 },
-    // Cables
-    { modelo: 'Cable USB-C 2m',          sku: 'CBL-UC2M',  color: 'Blanco',  descripcion: 'Cable trenzado USB-C 2 metros',  precio: 29.99, cantidad: 15 },
-    { modelo: 'Cable USB-C 2m',          sku: 'CBL-UC2M-N', color: 'Negro',  descripcion: 'Cable trenzado USB-C 2 metros',  precio: 29.99, cantidad: 10 },
+  const subAccesoriosData = [
+    {
+      nombre: 'Cable USB-C',
+      tipo: 'Cable',
+      descripcion: 'Cable trenzado USB-C a USB-C 2 metros',
+      cantidad: 25,
+      colores: ['Blanco', 'Negro'],
+      imagenes: [
+        'https://images.example.com/cable-usbc-blanco.jpg',
+        'https://images.example.com/cable-usbc-negro.jpg',
+      ],
+    },
+    {
+      nombre: 'Cargador 20W',
+      tipo: 'Cargador',
+      descripcion: 'Cargador rápido USB-C 20W',
+      cantidad: 15,
+      colores: ['Blanco'],
+      imagenes: [
+        'https://images.example.com/cargador-20w.jpg',
+      ],
+    },
+    {
+      nombre: 'Auriculares In-Ear',
+      tipo: 'Auriculares',
+      descripcion: 'Auriculares con cable USB-C, compatibles con todos los dispositivos',
+      cantidad: 12,
+      colores: ['Blanco', 'Negro', 'Rojo'],
+      imagenes: [
+        'https://images.example.com/auriculares-inear.jpg',
+        'https://images.example.com/auriculares-inear-colores.jpg',
+      ],
+    },
+    {
+      nombre: 'Soporte de Auto',
+      tipo: 'Soporte',
+      descripcion: 'Soporte magnético para auto, compatible con MagSafe',
+      cantidad: 9,
+      colores: ['Negro'],
+      imagenes: [
+        'https://images.example.com/soporte-auto.jpg',
+      ],
+    },
+    {
+      nombre: 'Power Bank 10000mAh',
+      tipo: 'Batería',
+      descripcion: 'Batería portátil 10000mAh con carga rápida USB-C',
+      cantidad: 7,
+      colores: ['Negro', 'Blanco'],
+      imagenes: [
+        'https://images.example.com/powerbank-negro.jpg',
+        'https://images.example.com/powerbank-blanco.jpg',
+      ],
+    },
   ];
 
-  for (const a of accesorios) {
-    const catalogoItemId = catalogoItemIds[a.modelo];
-    await prisma.accesorioStock.create({
+  for (const s of subAccesoriosData) {
+    const sub = await prisma.subAccesorio.create({
       data: {
-        sku:            a.sku,
-        color:          a.color,
-        descripcion:    a.descripcion,
-        precio:         a.precio,
-        cantidad:       a.cantidad,
-        catalogoItemId,
+        nombre: s.nombre,
+        tipo: s.tipo,
+        descripcion: s.descripcion,
+        cantidad: s.cantidad,
         puntoDeVentaId: pdv.id,
+        colores: {
+          create: s.colores.map((color) => ({ color })),
+        },
+        imagenes: {
+          create: s.imagenes.map((url, i) => ({ url, orden: i })),
+        },
       },
     });
-    console.log(`  ✅ ${a.modelo} ${a.color ?? ''} — stock: ${a.cantidad}`);
+    console.log(`  ✅ ${sub.nombre} — ${sub.tipo} — stock: ${s.cantidad}`);
   }
 
   console.log('\n🎉 Seed completado');
   console.log('─────────────────────────────────────');
-  console.log(`👤 Admin: marcos@todoapple.com / Admin1234!`);
-  console.log(`🏪 PdV:   Local Centro — Catamarca`);
-  console.log(`📱 Dispositivos: ${dispositivos.length}`);
-  console.log(`🎒 Accesorios:   ${accesorios.length} líneas de stock`);
+  console.log(`👤 Admins:        marcos@todoapple.com / store@todoapple.com`);
+  console.log(`🏪 PdV:           Local Centro — Catamarca`);
+  console.log(`🎒 Accesorios:    ${accesoriosData.length}`);
+  console.log(`📦 SubAccesorios: ${subAccesoriosData.length}`);
 }
 
 main()

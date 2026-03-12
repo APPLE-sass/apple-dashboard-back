@@ -9,37 +9,13 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────
+
 enum Role {
   ADMIN
   VENDEDOR
-}
-
-enum Categoria {
-  iPhone
-  iPad
-  Mac
-  Watch
-  AirPods
-  Accesorios
-}
-
-enum TipoMovimiento {
-  ENTRADA
-  SALIDA
-  AJUSTE
-  TRANSFERENCIA
-}
-
-enum ImeiScanStatus {
-  SUCCESS
-  INVALID_IMEI
-}
-
-enum EstadoDispositivo {
-  DISPONIBLE
-  VENDIDO
-  RESERVADO
-  BAJA
 }
 
 model User {
@@ -53,11 +29,115 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  imeiScans ImeiScanLog[]
-
   @@index([email])
   @@map("users")
 }
+
+// ─────────────────────────────────────────
+// ACCESORIOS DE MARCA (ej. funda para iPhone 17 Pro)
+// ─────────────────────────────────────────
+
+model Accesorio {
+  id          String   @id @default(uuid())
+  nombre      String                      // ej. "iPhone 17"
+  modelo      String                      // ej. "Pro"
+  tipo        String                      // ej. "Funda", "Templado"
+  descripcion String?
+  cantidad    Int      @default(0)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  colores  AccesorioColor[]
+  imagenes AccesorioImagen[]
+
+  puntoDeVentaId String       @map("punto_de_venta_id")
+  puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
+
+  @@index([puntoDeVentaId])
+  @@index([nombre])
+  @@index([tipo])
+  @@map("accesorios")
+}
+
+model AccesorioColor {
+  id          String    @id @default(uuid())
+  color       String
+
+  accesorioId String    @map("accesorio_id")
+  accesorio   Accesorio @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
+
+  @@index([accesorioId])
+  @@map("accesorio_colores")
+}
+
+model AccesorioImagen {
+  id          String    @id @default(uuid())
+  url         String
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  accesorioId String    @map("accesorio_id")
+  accesorio   Accesorio @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
+
+  @@index([accesorioId])
+  @@map("accesorio_imagenes")
+}
+
+// ─────────────────────────────────────────
+// ACCESORIOS GENÉRICOS (sin marca, ej. cable USB-C genérico)
+// ─────────────────────────────────────────
+
+model SubAccesorio {
+  id          String   @id @default(uuid())
+  nombre      String                      // ej. "Cable USB-C"
+  tipo        String                      // ej. "Cable", "Cargador"
+  descripcion String?
+  cantidad    Int      @default(0)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  colores  SubAccesorioColor[]
+  imagenes SubAccesorioImagen[]
+
+  puntoDeVentaId String       @map("punto_de_venta_id")
+  puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
+
+  @@index([puntoDeVentaId])
+  @@index([nombre])
+  @@index([tipo])
+  @@map("sub_accesorios")
+}
+
+model SubAccesorioColor {
+  id             String       @id @default(uuid())
+  color          String
+
+  subAccesorioId String       @map("sub_accesorio_id")
+  subAccesorio   SubAccesorio @relation(fields: [subAccesorioId], references: [id], onDelete: Cascade)
+
+  @@index([subAccesorioId])
+  @@map("sub_accesorio_colores")
+}
+
+model SubAccesorioImagen {
+  id             String       @id @default(uuid())
+  url            String
+  orden          Int          @default(0)
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  subAccesorioId String       @map("sub_accesorio_id")
+  subAccesorio   SubAccesorio @relation(fields: [subAccesorioId], references: [id], onDelete: Cascade)
+
+  @@index([subAccesorioId])
+  @@map("sub_accesorio_imagenes")
+}
+
+// ─────────────────────────────────────────
+// PUNTOS DE VENTA
+// ─────────────────────────────────────────
+
 
 model PuntoDeVenta {
   id        String   @id @default(uuid())
@@ -68,148 +148,8 @@ model PuntoDeVenta {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  catalogoItems CatalogoItem[]
-  dispositivos  DispositivoStock[]
-  accesorios    AccesorioStock[]
+  accesorios    Accesorio[]
+  subAccesorios SubAccesorio[]
 
   @@map("puntos_de_venta")
-}
-
-// Plantilla maestra global. No pertenece a ningún PdV.
-model CatalogoGlobal {
-  id             String    @id @default(uuid())
-  categoria      Categoria
-  modelo         String
-  descripcion    String?
-  precioSugerido Decimal   @db.Decimal(10, 2) @map("precio_sugerido")
-  isActive       Boolean   @default(true) @map("is_active")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-
-  catalogoItems CatalogoItem[]
-
-  @@index([categoria])
-  @@index([modelo])
-  @@map("catalogo_global")
-}
-
-// Reflejo de una plantilla global en un PdV específico.
-model CatalogoItem {
-  id          String   @id @default(uuid())
-  precioLocal Decimal? @db.Decimal(10, 2) @map("precio_local")
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  catalogoGlobalId String         @map("catalogo_global_id")
-  catalogoGlobal   CatalogoGlobal @relation(fields: [catalogoGlobalId], references: [id])
-
-  puntoDeVentaId String       @map("punto_de_venta_id")
-  puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
-
-  dispositivos DispositivoStock[]
-  accesorios   AccesorioStock[]
-
-  @@unique([catalogoGlobalId, puntoDeVentaId])
-  @@index([catalogoGlobalId])
-  @@index([puntoDeVentaId])
-  @@map("catalogo_items")
-}
-
-// Cada dispositivo real con IMEI único (iPhone, iPad, Mac, etc.)
-  model DispositivoStock {
-    id        String            @id @default(uuid())
-    imei      String            @unique
-    memoria   String?
-    color     String?
-    bateria   Int?
-    usado     Boolean           @default(false)
-    estado    EstadoDispositivo @default(DISPONIBLE)
-    notas     String?
-    createdAt DateTime          @default(now()) @map("created_at")
-    updatedAt DateTime          @updatedAt @map("updated_at")
-
-    catalogoItemId String       @map("catalogo_item_id")
-    catalogoItem   CatalogoItem @relation(fields: [catalogoItemId], references: [id])
-
-    puntoDeVentaId String       @map("punto_de_venta_id")
-    puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
-
-    proveedorId String?    @map("proveedor_id")
-    proveedor   Proveedor? @relation(fields: [proveedorId], references: [id])
-
-    historial HistorialDispositivo[]
-
-    @@index([imei])
-    @@index([catalogoItemId])
-    @@index([puntoDeVentaId])
-    @@index([estado])
-    @@index([usado])
-    @@map("dispositivos_stock")
-  }
-// Fundas, templados, cables, etc. — se manejan por cantidad
-model AccesorioStock {
-  id          String   @id @default(uuid())
-  sku         String?
-  color       String?
-  descripcion String?
-  precio      Decimal  @db.Decimal(10, 2)
-  cantidad    Int      @default(0)
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  catalogoItemId String       @map("catalogo_item_id")
-  catalogoItem   CatalogoItem @relation(fields: [catalogoItemId], references: [id])
-
-  puntoDeVentaId String       @map("punto_de_venta_id")
-  puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
-
-  @@index([catalogoItemId])
-  @@index([puntoDeVentaId])
-  @@index([sku])
-  @@map("accesorios_stock")
-}
-
-model HistorialDispositivo {
-  id            String           @id @default(uuid())
-  dispositivoId String           @map("dispositivo_id")
-  dispositivo   DispositivoStock @relation(fields: [dispositivoId], references: [id])
-  campo         String
-  valorAntes    String?          @map("valor_antes")
-  valorDespues  String?          @map("valor_despues")
-  createdAt     DateTime         @default(now()) @map("created_at")
-
-  @@index([dispositivoId])
-  @@map("historial_dispositivos")
-}
-
-model Proveedor {
-  id        String   @id @default(uuid())
-  nombre    String
-  contacto  String?
-  email     String?  @unique
-  telefono  String?
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  dispositivos DispositivoStock[]
-
-  @@map("proveedores")
-}
-
-model ImeiScanLog {
-  id        String         @id @default(uuid())
-  imei      String
-  status    ImeiScanStatus @default(SUCCESS)
-  userId    String         @map("user_id")
-  user      User           @relation(fields: [userId], references: [id])
-  createdAt DateTime       @default(now()) @map("created_at")
-
-  @@index([imei])
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
-  @@map("imei_scan_logs")
 }
