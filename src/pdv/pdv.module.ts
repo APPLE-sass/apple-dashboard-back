@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { PdvService } from './pdv.service';
-import { PdvController } from './pdv.controller';
+import { PuntoDeVentaController } from './pdv.controller';
+import { PuntoDeVentaService } from './pdv.service';
 
 @Module({
-  controllers: [PdvController],
-  providers: [PdvService],
+  controllers: [PuntoDeVentaController],
+  providers: [PuntoDeVentaService],
 })
 export class PdvModule {}
