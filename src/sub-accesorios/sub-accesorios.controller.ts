@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { SubAccesoriosService } from './sub-accesorios.service';
 import { CreateSubAccesorioDto } from './dto/create-sub-accesorio.dto';
 import { UpdateSubAccesorioDto } from './dto/update-sub-accesorio.dto';
@@ -15,8 +15,12 @@ export class SubAccesoriosController {
   }
 
   @Get()
-  findAll() {
-    return this.subAccesoriosService.findAll();
+  findAll(
+    @Query('nombre') nombre?: string,
+    @Query('tipo') tipo?: string,
+    @Query('puntoDeVentaId') puntoDeVentaId?: string,
+  ) {
+    return this.subAccesoriosService.findAll({ nombre, tipo, puntoDeVentaId });
   }
 
   @Get(':id')

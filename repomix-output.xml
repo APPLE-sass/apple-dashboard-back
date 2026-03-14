@@ -47,20 +47,20 @@ frontend-integration/api.ts
 nest-cli.json
 package.json
 prisma.config.ts
-prisma/migrations/20260311194816_init/migration.sql
-prisma/migrations/20260311200657_add_memoria_column/migration.sql
+prisma/migrations/20260312190533_init/migration.sql
 prisma/migrations/migration_lock.toml
 prisma/schema.prisma
 prisma/seed.ts
 README.md
-src/accesorios-stock/accesorios-stock.controller.spec.ts
-src/accesorios-stock/accesorios-stock.controller.ts
-src/accesorios-stock/accesorios-stock.module.ts
-src/accesorios-stock/accesorios-stock.service.spec.ts
-src/accesorios-stock/accesorios-stock.service.ts
-src/accesorios-stock/dto/create-accesorios.dto.ts
-src/accesorios-stock/dto/update-accesorios.dto.ts
-src/accesorios-stock/entities/accesorios-stock.entity.ts
+src/accesorios/accesorios.controller.spec.ts
+src/accesorios/accesorios.controller.ts
+src/accesorios/accesorios.module.ts
+src/accesorios/accesorios.service.spec.ts
+src/accesorios/accesorios.service.ts
+src/accesorios/dto/create-accesorio.dto.ts
+src/accesorios/dto/filter-accesorio.dto.ts
+src/accesorios/dto/update-accesorio.dto.ts
+src/accesorios/entities/accesorio.entity.ts
 src/app.controller.spec.ts
 src/app.controller.ts
 src/app.module.ts
@@ -76,23 +76,6 @@ src/auth/guards/jwt-refresh.guard.ts
 src/auth/interfaces/jwt-payload.interface.ts
 src/auth/strategies/jwt-access.strategy.ts
 src/auth/strategies/jwt-refresh.strategy.ts
-src/catalogo-global/catalogo-global.controller.spec.ts
-src/catalogo-global/catalogo-global.controller.ts
-src/catalogo-global/catalogo-global.module.ts
-src/catalogo-global/catalogo-global.service.spec.ts
-src/catalogo-global/catalogo-global.service.ts
-src/catalogo-global/dto/create-catalogo-global.dto.ts
-src/catalogo-global/dto/filter-catalogo-global.dto.ts
-src/catalogo-global/dto/update-catalogo-global.dto.ts
-src/catalogo-pdv/catalogo-pdv.controller.spec.ts
-src/catalogo-pdv/catalogo-pdv.controller.ts
-src/catalogo-pdv/catalogo-pdv.module.ts
-src/catalogo-pdv/catalogo-pdv.service.spec.ts
-src/catalogo-pdv/catalogo-pdv.service.ts
-src/catalogo-pdv/dto/assign-catalogo.dto.ts
-src/catalogo-pdv/dto/create-catalogo-pdv.dto.ts
-src/catalogo-pdv/dto/update-precio-local.dto.ts
-src/catalogo-pdv/entities/catalogo-pdv.entity.ts
 src/common/decorators/current-user.decorator.ts
 src/common/decorators/roles.decorator.ts
 src/common/filters/http-exception.filter.ts
@@ -100,34 +83,25 @@ src/common/guards/roles.guard.ts
 src/common/interceptors/response.interceptor.ts
 src/common/middleware/logging.middleware.ts
 src/config/env.validation.ts
-src/dispositivos-stock/dispositivos-stock.controller.spec.ts
-src/dispositivos-stock/dispositivos-stock.controller.ts
-src/dispositivos-stock/dispositivos-stock.module.ts
-src/dispositivos-stock/dispositivos-stock.service.spec.ts
-src/dispositivos-stock/dispositivos-stock.service.ts
-src/dispositivos-stock/dto/create-dispositivo.dto.ts
-src/dispositivos-stock/dto/filter-dispositivo.dto.ts
-src/dispositivos-stock/dto/update-dispositivos.dto.ts
-src/dispositivos-stock/entities/dispositivos-stock.entity.ts
-src/imei/dto/imei-lookup-result.dto.ts
-src/imei/dto/process-imei.dto.ts
-src/imei/imei.controller.spec.ts
-src/imei/imei.controller.ts
-src/imei/imei.module.ts
-src/imei/imei.service.spec.ts
-src/imei/imei.service.ts
-src/imei/pipes/luhn-validation.pipe.ts
 src/main.ts
+src/pdv/dto/create-pdv.dto.ts
+src/pdv/dto/update-pdv.dto.ts
+src/pdv/entities/pdv.entity.ts
+src/pdv/pdv.controller.spec.ts
+src/pdv/pdv.controller.ts
+src/pdv/pdv.module.ts
+src/pdv/pdv.service.spec.ts
+src/pdv/pdv.service.ts
 src/prisma/prisma.module.ts
 src/prisma/prisma.service.ts
-src/punto-de-venta/dto/create-pdv.dto.ts
-src/punto-de-venta/dto/update-pdv.ts
-src/punto-de-venta/entities/punto-de-venta.entity.ts
-src/punto-de-venta/punto-de-venta.controller.spec.ts
-src/punto-de-venta/punto-de-venta.controller.ts
-src/punto-de-venta/punto-de-venta.module.ts
-src/punto-de-venta/punto-de-venta.service.spec.ts
-src/punto-de-venta/punto-de-venta.service.ts
+src/sub-accesorios/dto/create-sub-accesorio.dto.ts
+src/sub-accesorios/dto/update-sub-accesorio.dto.ts
+src/sub-accesorios/entities/sub-accesorio.entity.ts
+src/sub-accesorios/sub-accesorios.controller.spec.ts
+src/sub-accesorios/sub-accesorios.controller.ts
+src/sub-accesorios/sub-accesorios.module.ts
+src/sub-accesorios/sub-accesorios.service.spec.ts
+src/sub-accesorios/sub-accesorios.service.ts
 src/users/users.module.ts
 src/users/users.service.ts
 test/app.e2e-spec.ts
@@ -138,1127 +112,6 @@ tsconfig.json
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="prisma/migrations/20260311194816_init/migration.sql">
--- CreateEnum
-CREATE TYPE "Role" AS ENUM ('ADMIN', 'VENDEDOR');
-
--- CreateEnum
-CREATE TYPE "Categoria" AS ENUM ('iPhone', 'iPad', 'Mac', 'Watch', 'AirPods', 'Accesorios');
-
--- CreateEnum
-CREATE TYPE "TipoMovimiento" AS ENUM ('ENTRADA', 'SALIDA', 'AJUSTE', 'TRANSFERENCIA');
-
--- CreateEnum
-CREATE TYPE "ImeiScanStatus" AS ENUM ('SUCCESS', 'INVALID_IMEI');
-
--- CreateEnum
-CREATE TYPE "EstadoDispositivo" AS ENUM ('DISPONIBLE', 'VENDIDO', 'RESERVADO', 'BAJA');
-
--- CreateTable
-CREATE TABLE "users" (
-    "id" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "password_hash" TEXT NOT NULL,
-    "role" "Role" NOT NULL DEFAULT 'VENDEDOR',
-    "refresh_token" TEXT,
-    "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "puntos_de_venta" (
-    "id" TEXT NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "direccion" TEXT,
-    "ciudad" TEXT,
-    "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "puntos_de_venta_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "catalogo_global" (
-    "id" TEXT NOT NULL,
-    "categoria" "Categoria" NOT NULL,
-    "modelo" TEXT NOT NULL,
-    "memoria" TEXT,
-    "color" TEXT,
-    "descripcion" TEXT,
-    "precio_sugerido" DECIMAL(10,2) NOT NULL,
-    "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "catalogo_global_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "catalogo_items" (
-    "id" TEXT NOT NULL,
-    "precio_local" DECIMAL(10,2),
-    "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "catalogo_global_id" TEXT NOT NULL,
-    "punto_de_venta_id" TEXT NOT NULL,
-
-    CONSTRAINT "catalogo_items_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "dispositivos_stock" (
-    "id" TEXT NOT NULL,
-    "imei" TEXT NOT NULL,
-    "bateria" INTEGER,
-    "usado" BOOLEAN NOT NULL DEFAULT false,
-    "estado" "EstadoDispositivo" NOT NULL DEFAULT 'DISPONIBLE',
-    "notas" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "catalogo_item_id" TEXT NOT NULL,
-    "punto_de_venta_id" TEXT NOT NULL,
-    "proveedor_id" TEXT,
-
-    CONSTRAINT "dispositivos_stock_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "accesorios_stock" (
-    "id" TEXT NOT NULL,
-    "sku" TEXT,
-    "color" TEXT,
-    "descripcion" TEXT,
-    "precio" DECIMAL(10,2) NOT NULL,
-    "cantidad" INTEGER NOT NULL DEFAULT 0,
-    "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "catalogo_item_id" TEXT NOT NULL,
-    "punto_de_venta_id" TEXT NOT NULL,
-
-    CONSTRAINT "accesorios_stock_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "historial_dispositivos" (
-    "id" TEXT NOT NULL,
-    "dispositivo_id" TEXT NOT NULL,
-    "campo" TEXT NOT NULL,
-    "valor_antes" TEXT,
-    "valor_despues" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "historial_dispositivos_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "proveedores" (
-    "id" TEXT NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "contacto" TEXT,
-    "email" TEXT,
-    "telefono" TEXT,
-    "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "proveedores_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "imei_scan_logs" (
-    "id" TEXT NOT NULL,
-    "imei" TEXT NOT NULL,
-    "status" "ImeiScanStatus" NOT NULL DEFAULT 'SUCCESS',
-    "user_id" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "imei_scan_logs_pkey" PRIMARY KEY ("id")
-);
-
--- CreateIndex
-CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
-
--- CreateIndex
-CREATE INDEX "users_email_idx" ON "users"("email");
-
--- CreateIndex
-CREATE INDEX "catalogo_global_categoria_idx" ON "catalogo_global"("categoria");
-
--- CreateIndex
-CREATE INDEX "catalogo_global_modelo_idx" ON "catalogo_global"("modelo");
-
--- CreateIndex
-CREATE INDEX "catalogo_items_catalogo_global_id_idx" ON "catalogo_items"("catalogo_global_id");
-
--- CreateIndex
-CREATE INDEX "catalogo_items_punto_de_venta_id_idx" ON "catalogo_items"("punto_de_venta_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "catalogo_items_catalogo_global_id_punto_de_venta_id_key" ON "catalogo_items"("catalogo_global_id", "punto_de_venta_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "dispositivos_stock_imei_key" ON "dispositivos_stock"("imei");
-
--- CreateIndex
-CREATE INDEX "dispositivos_stock_imei_idx" ON "dispositivos_stock"("imei");
-
--- CreateIndex
-CREATE INDEX "dispositivos_stock_catalogo_item_id_idx" ON "dispositivos_stock"("catalogo_item_id");
-
--- CreateIndex
-CREATE INDEX "dispositivos_stock_punto_de_venta_id_idx" ON "dispositivos_stock"("punto_de_venta_id");
-
--- CreateIndex
-CREATE INDEX "dispositivos_stock_estado_idx" ON "dispositivos_stock"("estado");
-
--- CreateIndex
-CREATE INDEX "dispositivos_stock_usado_idx" ON "dispositivos_stock"("usado");
-
--- CreateIndex
-CREATE INDEX "accesorios_stock_catalogo_item_id_idx" ON "accesorios_stock"("catalogo_item_id");
-
--- CreateIndex
-CREATE INDEX "accesorios_stock_punto_de_venta_id_idx" ON "accesorios_stock"("punto_de_venta_id");
-
--- CreateIndex
-CREATE INDEX "accesorios_stock_sku_idx" ON "accesorios_stock"("sku");
-
--- CreateIndex
-CREATE INDEX "historial_dispositivos_dispositivo_id_idx" ON "historial_dispositivos"("dispositivo_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "proveedores_email_key" ON "proveedores"("email");
-
--- CreateIndex
-CREATE INDEX "imei_scan_logs_imei_idx" ON "imei_scan_logs"("imei");
-
--- CreateIndex
-CREATE INDEX "imei_scan_logs_user_id_idx" ON "imei_scan_logs"("user_id");
-
--- CreateIndex
-CREATE INDEX "imei_scan_logs_status_idx" ON "imei_scan_logs"("status");
-
--- CreateIndex
-CREATE INDEX "imei_scan_logs_created_at_idx" ON "imei_scan_logs"("created_at");
-
--- AddForeignKey
-ALTER TABLE "catalogo_items" ADD CONSTRAINT "catalogo_items_catalogo_global_id_fkey" FOREIGN KEY ("catalogo_global_id") REFERENCES "catalogo_global"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "catalogo_items" ADD CONSTRAINT "catalogo_items_punto_de_venta_id_fkey" FOREIGN KEY ("punto_de_venta_id") REFERENCES "puntos_de_venta"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "dispositivos_stock" ADD CONSTRAINT "dispositivos_stock_catalogo_item_id_fkey" FOREIGN KEY ("catalogo_item_id") REFERENCES "catalogo_items"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "dispositivos_stock" ADD CONSTRAINT "dispositivos_stock_punto_de_venta_id_fkey" FOREIGN KEY ("punto_de_venta_id") REFERENCES "puntos_de_venta"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "dispositivos_stock" ADD CONSTRAINT "dispositivos_stock_proveedor_id_fkey" FOREIGN KEY ("proveedor_id") REFERENCES "proveedores"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "accesorios_stock" ADD CONSTRAINT "accesorios_stock_catalogo_item_id_fkey" FOREIGN KEY ("catalogo_item_id") REFERENCES "catalogo_items"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "accesorios_stock" ADD CONSTRAINT "accesorios_stock_punto_de_venta_id_fkey" FOREIGN KEY ("punto_de_venta_id") REFERENCES "puntos_de_venta"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "historial_dispositivos" ADD CONSTRAINT "historial_dispositivos_dispositivo_id_fkey" FOREIGN KEY ("dispositivo_id") REFERENCES "dispositivos_stock"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "imei_scan_logs" ADD CONSTRAINT "imei_scan_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-</file>
-
-<file path="prisma/migrations/20260311200657_add_memoria_column/migration.sql">
-/*
-  Warnings:
-
-  - You are about to drop the column `color` on the `catalogo_global` table. All the data in the column will be lost.
-  - You are about to drop the column `memoria` on the `catalogo_global` table. All the data in the column will be lost.
-
-*/
--- AlterTable
-ALTER TABLE "catalogo_global" DROP COLUMN "color",
-DROP COLUMN "memoria";
-
--- AlterTable
-ALTER TABLE "dispositivos_stock" ADD COLUMN     "color" TEXT,
-ADD COLUMN     "memoria" TEXT;
-</file>
-
-<file path="src/accesorios-stock/accesorios-stock.controller.spec.ts">
-import { Test, TestingModule } from '@nestjs/testing';
-import { AccesoriosStockController } from './accesorios-stock.controller';
-import { AccesoriosStockService } from './accesorios-stock.service';
-
-describe('AccesoriosStockController', () => {
-  let controller: AccesoriosStockController;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [AccesoriosStockController],
-      providers: [AccesoriosStockService],
-    }).compile();
-
-    controller = module.get<AccesoriosStockController>(AccesoriosStockController);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
-</file>
-
-<file path="src/accesorios-stock/accesorios-stock.controller.ts">
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, HttpStatus, UseGuards, ParseUUIDPipe } from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { AccesoriosStockService } from './accesorios-stock.service';
-import { CreateAccesorioDto } from './dto/create-accesorios.dto';
-import { UpdateAccesorioDto } from './dto/update-accesorios.dto';
-import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-
-@Controller('accesorios-stock')
-@UseGuards(JwtAccessGuard, RolesGuard)
-export class AccesoriosStockController {
-  constructor(private readonly service: AccesoriosStockService) {}
-
-  @Post() @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: CreateAccesorioDto) { return this.service.create(dto); }
-
-  @Get()
-  findAll(
-    @Query('puntoDeVentaId') puntoDeVentaId?: string,
-    @Query('catalogoItemId') catalogoItemId?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) { return this.service.findAll({ puntoDeVentaId, catalogoItemId, page: page ? +page : 1, limit: limit ? +limit : 20 }); }
-
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) { return this.service.findOne(id); }
-
-  @Patch(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateAccesorioDto) { return this.service.update(id, dto); }
-
-  // PATCH /accesorios-stock/:id/cantidad  body: { delta: 5 } o { delta: -3 }
-  @Patch(':id/cantidad')
-  ajustarCantidad(@Param('id', ParseUUIDPipe) id: string, @Body('delta') delta: number) { return this.service.ajustarCantidad(id, delta); }
-
-  @Delete(':id') @Roles(Role.ADMIN) @HttpCode(HttpStatus.OK)
-  remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id); }
-}
-</file>
-
-<file path="src/accesorios-stock/accesorios-stock.module.ts">
-import { Module } from '@nestjs/common';
-import { AccesoriosStockController } from './accesorios-stock.controller';
-import { AccesoriosStockService } from './accesorios-stock.service';
-
-@Module({ controllers: [AccesoriosStockController], providers: [AccesoriosStockService], exports: [AccesoriosStockService] })
-export class AccesoriosStockModule {}
-</file>
-
-<file path="src/accesorios-stock/accesorios-stock.service.spec.ts">
-import { Test, TestingModule } from '@nestjs/testing';
-import { AccesoriosStockService } from './accesorios-stock.service';
-
-describe('AccesoriosStockService', () => {
-  let service: AccesoriosStockService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [AccesoriosStockService],
-    }).compile();
-
-    service = module.get<AccesoriosStockService>(AccesoriosStockService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
-</file>
-
-<file path="src/accesorios-stock/accesorios-stock.service.ts">
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateAccesorioDto } from './dto/create-accesorios.dto';
-import { UpdateAccesorioDto } from './dto/update-accesorios.dto';
-
-@Injectable()
-export class AccesoriosStockService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async create(dto: CreateAccesorioDto) {
-    const catalogoItem = await this.prisma.catalogoItem.findUnique({ where: { id: dto.catalogoItemId } });
-    if (!catalogoItem || catalogoItem.puntoDeVentaId !== dto.puntoDeVentaId) {
-      throw new NotFoundException(`El ítem de catálogo "${dto.catalogoItemId}" no pertenece a este punto de venta`);
-    }
-    return this.prisma.accesorioStock.create({
-      data: { sku: dto.sku, color: dto.color, descripcion: dto.descripcion, precio: dto.precio, cantidad: dto.cantidad, catalogoItemId: dto.catalogoItemId, puntoDeVentaId: dto.puntoDeVentaId },
-      include: { catalogoItem: { include: { catalogoGlobal: true } }, puntoDeVenta: { select: { id: true, nombre: true } } },
-    });
-  }
-
-  async findAll(filters: { puntoDeVentaId?: string; catalogoItemId?: string; page?: number; limit?: number }) {
-    const { puntoDeVentaId, catalogoItemId, page = 1, limit = 20 } = filters;
-    const where: Prisma.AccesorioStockWhereInput = {
-      isActive: true,
-      ...(puntoDeVentaId && { puntoDeVentaId }),
-      ...(catalogoItemId && { catalogoItemId }),
-    };
-    const skip = (page - 1) * limit;
-    const [total, items] = await this.prisma.$transaction([
-      this.prisma.accesorioStock.count({ where }),
-      this.prisma.accesorioStock.findMany({
-        where, skip, take: limit, orderBy: { createdAt: 'desc' },
-        include: { catalogoItem: { include: { catalogoGlobal: { select: { modelo: true, categoria: true } } } }, puntoDeVenta: { select: { id: true, nombre: true } } },
-      }),
-    ]);
-    return { items, meta: { total, page, limit, totalPages: Math.ceil(total / limit), hasNextPage: page < Math.ceil(total / limit), hasPrevPage: page > 1 } };
-  }
-
-  async findOne(id: string) {
-    const a = await this.prisma.accesorioStock.findUnique({
-      where: { id },
-      include: { catalogoItem: { include: { catalogoGlobal: true } }, puntoDeVenta: true },
-    });
-    if (!a) throw new NotFoundException(`Accesorio "${id}" no encontrado`);
-    return a;
-  }
-
-  async update(id: string, dto: UpdateAccesorioDto) {
-    await this.findOne(id);
-    return this.prisma.accesorioStock.update({
-      where: { id },
-      data: {
-        ...(dto.sku !== undefined && { sku: dto.sku }),
-        ...(dto.color !== undefined && { color: dto.color }),
-        ...(dto.descripcion !== undefined && { descripcion: dto.descripcion }),
-        ...(dto.precio !== undefined && { precio: dto.precio }),
-        ...(dto.cantidad !== undefined && { cantidad: dto.cantidad }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-      },
-      include: { catalogoItem: { include: { catalogoGlobal: true } }, puntoDeVenta: { select: { id: true, nombre: true } } },
-    });
-  }
-
-  async ajustarCantidad(id: string, delta: number) {
-    const accesorio = await this.findOne(id);
-    const nuevaCantidad = accesorio.cantidad + delta;
-    if (nuevaCantidad < 0) throw new NotFoundException(`Stock insuficiente. Stock actual: ${accesorio.cantidad}`);
-    return this.prisma.accesorioStock.update({ where: { id }, data: { cantidad: nuevaCantidad } });
-  }
-
-  async remove(id: string) {
-    await this.findOne(id);
-    await this.prisma.accesorioStock.update({ where: { id }, data: { isActive: false } });
-    return { message: `Accesorio "${id}" eliminado correctamente` };
-  }
-}
-</file>
-
-<file path="src/accesorios-stock/dto/create-accesorios.dto.ts">
-import { IsString, IsOptional, IsNumber, IsInt, Min, IsUUID, MaxLength } from 'class-validator';
-import { Type } from 'class-transformer';
-
-export class CreateAccesorioDto {
-  @IsOptional() @IsString() @MaxLength(60) sku?: string;
-  @IsOptional() @IsString() @MaxLength(60) color?: string;
-  @IsOptional() @IsString() @MaxLength(500) descripcion?: string;
-  @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Type(() => Number) precio: number;
-  @IsInt() @Min(0) @Type(() => Number) cantidad: number;
-  @IsUUID() catalogoItemId: string;
-  @IsUUID() puntoDeVentaId: string;
-}
-</file>
-
-<file path="src/accesorios-stock/dto/update-accesorios.dto.ts">
-import { PartialType } from '@nestjs/mapped-types';
-import { IsBoolean, IsOptional } from 'class-validator';
-import { CreateAccesorioDto } from './create-accesorios.dto';
-
-export class UpdateAccesorioDto extends PartialType(CreateAccesorioDto) {
-  @IsOptional() @IsBoolean() isActive?: boolean;
-}
-</file>
-
-<file path="src/accesorios-stock/entities/accesorios-stock.entity.ts">
-export class AccesoriosStock {}
-</file>
-
-<file path="src/catalogo-global/catalogo-global.controller.spec.ts">
-import { Test, TestingModule } from '@nestjs/testing';
-import { CatalogoGlobalController } from './catalogo-global.controller';
-import { CatalogoGlobalService } from './catalogo-global.service';
-
-describe('CatalogoGlobalController', () => {
-  let controller: CatalogoGlobalController;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [CatalogoGlobalController],
-      providers: [CatalogoGlobalService],
-    }).compile();
-
-    controller = module.get<CatalogoGlobalController>(CatalogoGlobalController);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
-</file>
-
-<file path="src/catalogo-global/catalogo-global.controller.ts">
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, HttpStatus, UseGuards, ParseUUIDPipe } from '@nestjs/common';
-import { CatalogoGlobalService } from './catalogo-global.service';
-import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
-import { CreateCatalogoGlobalDto } from './dto/create-catalogo-global.dto';
-import { UpdateCatalogoGlobalDto } from './dto/update-catalogo-global.dto';
-import { FilterCatalogoGlobalDto } from './dto/filter-catalogo-global.dto';
-
-@Controller('catalogo-global')
-@UseGuards(JwtAccessGuard)
-export class CatalogoGlobalController {
-  constructor(private readonly service: CatalogoGlobalService) {}
-
-  @Post() @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: CreateCatalogoGlobalDto) { return this.service.create(dto); }
-
-  @Get()
-  findAll(@Query() filters: FilterCatalogoGlobalDto) { return this.service.findAll(filters); }
-
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) { return this.service.findOne(id); }
-
-  @Patch(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCatalogoGlobalDto) { return this.service.update(id, dto); }
-
-  @Delete(':id') @HttpCode(HttpStatus.OK)
-  remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id); }
-}
-</file>
-
-<file path="src/catalogo-global/catalogo-global.module.ts">
-import { Module } from '@nestjs/common';
-import { CatalogoGlobalController } from './catalogo-global.controller';
-import { CatalogoGlobalService } from './catalogo-global.service';
-
-@Module({ controllers: [CatalogoGlobalController], providers: [CatalogoGlobalService], exports: [CatalogoGlobalService] })
-export class CatalogoGlobalModule {}
-</file>
-
-<file path="src/catalogo-global/catalogo-global.service.spec.ts">
-import { Test, TestingModule } from '@nestjs/testing';
-import { CatalogoGlobalService } from './catalogo-global.service';
-
-describe('CatalogoGlobalService', () => {
-  let service: CatalogoGlobalService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [CatalogoGlobalService],
-    }).compile();
-
-    service = module.get<CatalogoGlobalService>(CatalogoGlobalService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
-</file>
-
-<file path="src/catalogo-global/catalogo-global.service.ts">
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateCatalogoGlobalDto } from './dto/create-catalogo-global.dto';
-import { UpdateCatalogoGlobalDto } from './dto/update-catalogo-global.dto';
-import { FilterCatalogoGlobalDto } from './dto/filter-catalogo-global.dto';
-
-@Injectable()
-export class CatalogoGlobalService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async create(dto: CreateCatalogoGlobalDto) {
-    return this.prisma.catalogoGlobal.create({ data: dto });
-  }
-
-  async findAll(filters: FilterCatalogoGlobalDto) {
-    const { categoria, modelo, page = 1, limit = 20 } = filters;
-    const where: Prisma.CatalogoGlobalWhereInput = {
-      isActive: true,
-      ...(categoria && { categoria }),
-      ...(modelo && { modelo: { contains: modelo, mode: Prisma.QueryMode.insensitive } }),
-    };
-    const skip = (page - 1) * limit;
-    const [total, items] = await this.prisma.$transaction([
-      this.prisma.catalogoGlobal.count({ where }),
-      this.prisma.catalogoGlobal.findMany({
-        where, skip, take: limit,
-        orderBy: [{ categoria: 'asc' }, { modelo: 'asc' }],
-        include: { _count: { select: { catalogoItems: true } } },
-      }),
-    ]);
-    return { items, meta: { total, page, limit, totalPages: Math.ceil(total / limit), hasNextPage: page < Math.ceil(total / limit), hasPrevPage: page > 1 } };
-  }
-
-  async findOne(id: string) {
-    const item = await this.prisma.catalogoGlobal.findUnique({
-      where: { id },
-      include: {
-        _count: { select: { catalogoItems: true } },
-        catalogoItems: {
-          where: { isActive: true },
-          include: {
-            puntoDeVenta: { select: { id: true, nombre: true, ciudad: true } },
-            _count: { select: { dispositivos: true, accesorios: true } },
-          },
-        },
-      },
-    });
-    if (!item) throw new NotFoundException(`Ítem global "${id}" no encontrado`);
-    return item;
-  }
-
-  async update(id: string, dto: UpdateCatalogoGlobalDto) {
-    await this.findOne(id);
-    return this.prisma.catalogoGlobal.update({ where: { id }, data: dto });
-  }
-
-  async remove(id: string) {
-    await this.findOne(id);
-    await this.prisma.catalogoGlobal.update({ where: { id }, data: { isActive: false } });
-    return { message: `Plantilla "${id}" desactivada correctamente` };
-  }
-}
-</file>
-
-<file path="src/catalogo-global/dto/create-catalogo-global.dto.ts">
-import { IsString, IsEnum, IsNumber, IsOptional, Min, MinLength, MaxLength } from 'class-validator';
-import { Type } from 'class-transformer';
-import { Categoria } from '@prisma/client';
-
-export class CreateCatalogoGlobalDto {
-  @IsEnum(Categoria)
-  categoria: Categoria;
-
-  @IsString() @MinLength(2) @MaxLength(120)
-  modelo: string;
-
-  @IsOptional() @IsString() @MaxLength(500)
-  descripcion?: string;
-
-  @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Type(() => Number)
-  precioSugerido: number;
-}
-</file>
-
-<file path="src/catalogo-global/dto/filter-catalogo-global.dto.ts">
-import { IsOptional, IsEnum, IsString, IsInt, Min, Max } from 'class-validator';
-import { Type } from 'class-transformer';
-import { Categoria } from '@prisma/client';
-
-export class FilterCatalogoGlobalDto {
-  @IsOptional() @IsEnum(Categoria) categoria?: Categoria;
-  @IsOptional() @IsString() modelo?: string;
-  @IsOptional() @IsInt() @Min(1) @Max(100) @Type(() => Number) limit?: number = 20;
-  @IsOptional() @IsInt() @Min(1) @Type(() => Number) page?: number = 1;
-}
-</file>
-
-<file path="src/catalogo-global/dto/update-catalogo-global.dto.ts">
-import { PartialType } from '@nestjs/mapped-types';
-import { IsBoolean, IsOptional } from 'class-validator';
-import { CreateCatalogoGlobalDto } from './create-catalogo-global.dto';
-
-export class UpdateCatalogoGlobalDto extends PartialType(CreateCatalogoGlobalDto) {
-  @IsOptional() @IsBoolean()
-  isActive?: boolean;
-}
-</file>
-
-<file path="src/catalogo-pdv/catalogo-pdv.controller.spec.ts">
-import { Test, TestingModule } from '@nestjs/testing';
-import { CatalogoPdvController } from './catalogo-pdv.controller';
-import { CatalogoPdvService } from './catalogo-pdv.service';
-
-describe('CatalogoPdvController', () => {
-  let controller: CatalogoPdvController;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [CatalogoPdvController],
-      providers: [CatalogoPdvService],
-    }).compile();
-
-    controller = module.get<CatalogoPdvController>(CatalogoPdvController);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
-</file>
-
-<file path="src/catalogo-pdv/catalogo-pdv.controller.ts">
-import { Controller, Get, Post, Patch, Delete, Body, Param, HttpCode, HttpStatus, UseGuards, ParseUUIDPipe } from '@nestjs/common';
-import { CatalogoPdvService } from './catalogo-pdv.service';
-import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
-import { AssignCatalogoDto } from './dto/assign-catalogo.dto';
-import { UpdatePrecioLocalDto } from './dto/update-precio-local.dto';
-
-@Controller('catalogo-pdv')
-@UseGuards(JwtAccessGuard)
-export class CatalogoPdvController {
-  constructor(private readonly service: CatalogoPdvService) {}
-
-  // POST /catalogo-pdv/assign — asignar plantilla global a un PdV
-  @Post('assign') @HttpCode(HttpStatus.CREATED)
-  assign(@Body() dto: AssignCatalogoDto) { return this.service.assign(dto); }
-
-  // GET /catalogo-pdv/pdv/:puntoDeVentaId — catálogo completo del PdV
-  @Get('pdv/:puntoDeVentaId')
-  findByPdv(@Param('puntoDeVentaId', ParseUUIDPipe) puntoDeVentaId: string) { return this.service.findByPdv(puntoDeVentaId); }
-
-  // GET /catalogo-pdv/pdv/:puntoDeVentaId/:catalogoItemId — detalle con dispositivos y accesorios
-  @Get('pdv/:puntoDeVentaId/:catalogoItemId')
-  findOneInPdv(
-    @Param('puntoDeVentaId', ParseUUIDPipe) puntoDeVentaId: string,
-    @Param('catalogoItemId', ParseUUIDPipe) catalogoItemId: string,
-  ) { return this.service.findOneInPdv(puntoDeVentaId, catalogoItemId); }
-
-  // PATCH /catalogo-pdv/:id — actualizar precio local
-  @Patch(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdatePrecioLocalDto) { return this.service.updatePrecioLocal(id, dto); }
-
-  // DELETE /catalogo-pdv/:id — desvincular del PdV
-  @Delete(':id') @HttpCode(HttpStatus.OK)
-  remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id); }
-}
-</file>
-
-<file path="src/catalogo-pdv/catalogo-pdv.module.ts">
-import { Module } from '@nestjs/common';
-import { CatalogoPdvController } from './catalogo-pdv.controller';
-import { CatalogoPdvService } from './catalogo-pdv.service';
-
-@Module({ controllers: [CatalogoPdvController], providers: [CatalogoPdvService], exports: [CatalogoPdvService] })
-export class CatalogoPdvModule {}
-</file>
-
-<file path="src/catalogo-pdv/catalogo-pdv.service.spec.ts">
-import { Test, TestingModule } from '@nestjs/testing';
-import { CatalogoPdvService } from './catalogo-pdv.service';
-
-describe('CatalogoPdvService', () => {
-  let service: CatalogoPdvService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [CatalogoPdvService],
-    }).compile();
-
-    service = module.get<CatalogoPdvService>(CatalogoPdvService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
-</file>
-
-<file path="src/catalogo-pdv/catalogo-pdv.service.ts">
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { AssignCatalogoDto } from './dto/assign-catalogo.dto';
-import { UpdatePrecioLocalDto } from './dto/update-precio-local.dto';
-
-@Injectable()
-export class CatalogoPdvService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async assign(dto: AssignCatalogoDto) {
-    const global = await this.prisma.catalogoGlobal.findUnique({ where: { id: dto.catalogoGlobalId } });
-    if (!global) throw new NotFoundException(`Plantilla global "${dto.catalogoGlobalId}" no encontrada`);
-
-    const pdv = await this.prisma.puntoDeVenta.findUnique({ where: { id: dto.puntoDeVentaId } });
-    if (!pdv) throw new NotFoundException(`Punto de venta "${dto.puntoDeVentaId}" no encontrado`);
-
-    const exists = await this.prisma.catalogoItem.findUnique({
-      where: { catalogoGlobalId_puntoDeVentaId: { catalogoGlobalId: dto.catalogoGlobalId, puntoDeVentaId: dto.puntoDeVentaId } },
-    });
-    if (exists) throw new ConflictException(`La plantilla "${global.modelo}" ya está asignada al PdV "${pdv.nombre}"`);
-
-    return this.prisma.catalogoItem.create({
-      data: { catalogoGlobalId: dto.catalogoGlobalId, puntoDeVentaId: dto.puntoDeVentaId, precioLocal: dto.precioLocal ?? null },
-      include: { catalogoGlobal: true, puntoDeVenta: { select: { id: true, nombre: true } } },
-    });
-  }
-
-  async findByPdv(puntoDeVentaId: string) {
-    const pdv = await this.prisma.puntoDeVenta.findUnique({ where: { id: puntoDeVentaId } });
-    if (!pdv) throw new NotFoundException(`Punto de venta "${puntoDeVentaId}" no encontrado`);
-
-    const items = await this.prisma.catalogoItem.findMany({
-      where: { puntoDeVentaId, isActive: true },
-      include: {
-        catalogoGlobal: true,
-        _count: {
-          select: {
-            dispositivos: { where: { estado: 'DISPONIBLE' } },
-            accesorios: { where: { isActive: true } },
-          },
-        },
-      },
-      orderBy: { catalogoGlobal: { modelo: 'asc' } },
-    });
-
-    return {
-      pdv: { id: pdv.id, nombre: pdv.nombre, ciudad: pdv.ciudad },
-      items: items.map((item) => ({
-        ...item,
-        precioEfectivo: item.precioLocal ?? item.catalogoGlobal.precioSugerido,
-      })),
-    };
-  }
-
-  async findOneInPdv(puntoDeVentaId: string, catalogoItemId: string) {
-    const item = await this.prisma.catalogoItem.findUnique({
-      where: { id: catalogoItemId },
-      include: {
-        catalogoGlobal: true,
-        puntoDeVenta: { select: { id: true, nombre: true } },
-        dispositivos: {
-          orderBy: { createdAt: 'desc' },
-          include: { proveedor: { select: { id: true, nombre: true } } },
-        },
-        accesorios: { where: { isActive: true }, orderBy: { createdAt: 'desc' } },
-      },
-    });
-
-    if (!item || item.puntoDeVentaId !== puntoDeVentaId) {
-      throw new NotFoundException(`Ítem de catálogo "${catalogoItemId}" no encontrado en este PdV`);
-    }
-
-    return { ...item, precioEfectivo: item.precioLocal ?? item.catalogoGlobal.precioSugerido };
-  }
-
-  async updatePrecioLocal(id: string, dto: UpdatePrecioLocalDto) {
-    const item = await this.prisma.catalogoItem.findUnique({ where: { id } });
-    if (!item) throw new NotFoundException(`Ítem de catálogo "${id}" no encontrado`);
-    return this.prisma.catalogoItem.update({
-      where: { id },
-      data: {
-        ...(dto.precioLocal !== undefined && { precioLocal: dto.precioLocal }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-      },
-      include: {
-        catalogoGlobal: { select: { id: true, modelo: true, precioSugerido: true } },
-        puntoDeVenta: { select: { id: true, nombre: true } },
-      },
-    });
-  }
-
-  async remove(id: string) {
-    const item = await this.prisma.catalogoItem.findUnique({ where: { id } });
-    if (!item) throw new NotFoundException(`Ítem "${id}" no encontrado`);
-    await this.prisma.catalogoItem.update({ where: { id }, data: { isActive: false } });
-    return { message: `Ítem "${id}" desvinculado del punto de venta` };
-  }
-}
-</file>
-
-<file path="src/catalogo-pdv/dto/assign-catalogo.dto.ts">
-import { IsOptional, IsNumber, Min, IsUUID } from 'class-validator';
-import { Type } from 'class-transformer';
-
-export class AssignCatalogoDto {
-  @IsUUID() catalogoGlobalId: string;
-  @IsUUID() puntoDeVentaId: string;
-  @IsOptional() @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Type(() => Number)
-  precioLocal?: number;
-}
-</file>
-
-<file path="src/catalogo-pdv/dto/create-catalogo-pdv.dto.ts">
-export class CreateCatalogoPdvDto {}
-</file>
-
-<file path="src/catalogo-pdv/dto/update-precio-local.dto.ts">
-import { IsOptional, IsNumber, Min, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
-
-export class UpdatePrecioLocalDto {
-  @IsOptional() @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Type(() => Number)
-  precioLocal?: number | null;
-  @IsOptional() @IsBoolean() isActive?: boolean;
-}
-</file>
-
-<file path="src/catalogo-pdv/entities/catalogo-pdv.entity.ts">
-export class CatalogoPdv {}
-</file>
-
-<file path="src/dispositivos-stock/dispositivos-stock.controller.spec.ts">
-import { Test, TestingModule } from '@nestjs/testing';
-import { DispositivosStockController } from './dispositivos-stock.controller';
-import { DispositivosStockService } from './dispositivos-stock.service';
-
-describe('DispositivosStockController', () => {
-  let controller: DispositivosStockController;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [DispositivosStockController],
-      providers: [DispositivosStockService],
-    }).compile();
-
-    controller = module.get<DispositivosStockController>(DispositivosStockController);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
-</file>
-
-<file path="src/dispositivos-stock/dispositivos-stock.controller.ts">
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, HttpStatus, UseGuards, ParseUUIDPipe } from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { DispositivosStockService } from './dispositivos-stock.service';
-import { CreateDispositivoDto } from './dto/create-dispositivo.dto';
-import { UpdateDispositivoDto } from './dto/update-dispositivos.dto';
-import { FilterDispositivoDto } from './dto/filter-dispositivo.dto';
-import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-
-@Controller('dispositivos-stock')
-@UseGuards(JwtAccessGuard, RolesGuard)
-export class DispositivosStockController {
-  constructor(private readonly service: DispositivosStockService) {}
-
-  @Post() @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: CreateDispositivoDto) { return this.service.create(dto); }
-
-  @Get()
-  findAll(@Query() filters: FilterDispositivoDto) { return this.service.findAll(filters); }
-
-  @Get('imei/:imei')
-  findByImei(@Param('imei') imei: string) { return this.service.findByImei(imei); }
-
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) { return this.service.findOne(id); }
-
-  @Patch(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateDispositivoDto) { return this.service.update(id, dto); }
-
-  @Delete(':id') @Roles(Role.ADMIN) @HttpCode(HttpStatus.OK)
-  remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id); }
-}
-</file>
-
-<file path="src/dispositivos-stock/dispositivos-stock.module.ts">
-import { Module } from '@nestjs/common';
-import { DispositivosStockController } from './dispositivos-stock.controller';
-import { DispositivosStockService } from './dispositivos-stock.service';
-
-@Module({ controllers: [DispositivosStockController], providers: [DispositivosStockService], exports: [DispositivosStockService] })
-export class DispositivosStockModule {}
-</file>
-
-<file path="src/dispositivos-stock/dispositivos-stock.service.spec.ts">
-import { Test, TestingModule } from '@nestjs/testing';
-import { DispositivosStockService } from './dispositivos-stock.service';
-
-describe('DispositivosStockService', () => {
-  let service: DispositivosStockService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [DispositivosStockService],
-    }).compile();
-
-    service = module.get<DispositivosStockService>(DispositivosStockService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
-</file>
-
-<file path="src/dispositivos-stock/dispositivos-stock.service.ts">
-import { Injectable, NotFoundException, ConflictException, UnprocessableEntityException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateDispositivoDto } from './dto/create-dispositivo.dto';
-import { UpdateDispositivoDto } from './dto/update-dispositivos.dto';
-import { FilterDispositivoDto } from './dto/filter-dispositivo.dto';
-
-@Injectable()
-export class DispositivosStockService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  private passesLuhn(imei: string): boolean {
-    let sum = 0, shouldDouble = false;
-    for (let i = imei.length - 1; i >= 0; i--) {
-      let digit = parseInt(imei.charAt(i), 10);
-      if (shouldDouble) { digit *= 2; if (digit > 9) digit -= 9; }
-      sum += digit; shouldDouble = !shouldDouble;
-    }
-    return sum % 10 === 0;
-  }
-
-  private validateImei(imei: string) {
-    if (!this.passesLuhn(imei)) throw new UnprocessableEntityException(`El IMEI "${imei}" no supera la validación de Luhn.`);
-  }
-
-  async create(dto: CreateDispositivoDto) {
-    this.validateImei(dto.imei);
-
-    const existing = await this.prisma.dispositivoStock.findUnique({ where: { imei: dto.imei } });
-    if (existing) throw new ConflictException(`Ya existe un dispositivo con el IMEI "${dto.imei}"`);
-
-    const catalogoItem = await this.prisma.catalogoItem.findUnique({ where: { id: dto.catalogoItemId } });
-    if (!catalogoItem || catalogoItem.puntoDeVentaId !== dto.puntoDeVentaId) {
-      throw new NotFoundException(`El ítem de catálogo "${dto.catalogoItemId}" no pertenece a este punto de venta`);
-    }
-
-    return this.prisma.dispositivoStock.create({
-      data: { imei: dto.imei, bateria: dto.bateria, usado: dto.usado ?? false, estado: dto.estado ?? 'DISPONIBLE', notas: dto.notas, catalogoItemId: dto.catalogoItemId, puntoDeVentaId: dto.puntoDeVentaId, proveedorId: dto.proveedorId },
-      include: { catalogoItem: { include: { catalogoGlobal: true } }, puntoDeVenta: { select: { id: true, nombre: true } }, proveedor: { select: { id: true, nombre: true } } },
-    });
-  }
-
-  async findAll(filters: FilterDispositivoDto) {
-    const { puntoDeVentaId, catalogoItemId, usado, estado, page = 1, limit = 20 } = filters;
-    const where: Prisma.DispositivoStockWhereInput = {
-      ...(puntoDeVentaId && { puntoDeVentaId }),
-      ...(catalogoItemId && { catalogoItemId }),
-      ...(usado !== undefined && { usado }),
-      ...(estado && { estado }),
-    };
-    const skip = (page - 1) * limit;
-    const [total, items] = await this.prisma.$transaction([
-      this.prisma.dispositivoStock.count({ where }),
-      this.prisma.dispositivoStock.findMany({
-        where, skip, take: limit, orderBy: { createdAt: 'desc' },
-        include: { catalogoItem: { include: { catalogoGlobal: { select: { modelo: true, categoria: true, precioSugerido: true } } } }, puntoDeVenta: { select: { id: true, nombre: true } } },
-      }),
-    ]);
-    return { items, meta: { total, page, limit, totalPages: Math.ceil(total / limit), hasNextPage: page < Math.ceil(total / limit), hasPrevPage: page > 1 } };
-  }
-
-  async findOne(id: string) {
-    const d = await this.prisma.dispositivoStock.findUnique({
-      where: { id },
-      include: { catalogoItem: { include: { catalogoGlobal: true } }, puntoDeVenta: true, proveedor: true, historial: { orderBy: { createdAt: 'desc' } } },
-    });
-    if (!d) throw new NotFoundException(`Dispositivo "${id}" no encontrado`);
-    return d;
-  }
-
-  async findByImei(imei: string) {
-    const d = await this.prisma.dispositivoStock.findUnique({
-      where: { imei },
-      include: { catalogoItem: { include: { catalogoGlobal: true } }, puntoDeVenta: true, proveedor: true },
-    });
-    if (!d) throw new NotFoundException(`No se encontró dispositivo con IMEI "${imei}"`);
-    return d;
-  }
-
-  async update(id: string, dto: UpdateDispositivoDto) {
-    const current = await this.findOne(id);
-    if (dto.imei && dto.imei !== current.imei) {
-      this.validateImei(dto.imei);
-      const exists = await this.prisma.dispositivoStock.findUnique({ where: { imei: dto.imei } });
-      if (exists) throw new ConflictException(`Ya existe otro dispositivo con IMEI "${dto.imei}"`);
-    }
-    return this.prisma.dispositivoStock.update({
-      where: { id },
-      data: {
-        ...(dto.imei !== undefined && { imei: dto.imei }),
-        ...(dto.bateria !== undefined && { bateria: dto.bateria }),
-        ...(dto.usado !== undefined && { usado: dto.usado }),
-        ...(dto.estado !== undefined && { estado: dto.estado }),
-        ...(dto.notas !== undefined && { notas: dto.notas }),
-        ...(dto.catalogoItemId !== undefined && { catalogoItemId: dto.catalogoItemId }),
-        ...(dto.puntoDeVentaId !== undefined && { puntoDeVentaId: dto.puntoDeVentaId }),
-        ...(dto.proveedorId !== undefined && { proveedorId: dto.proveedorId }),
-      },
-      include: { catalogoItem: { include: { catalogoGlobal: true } }, puntoDeVenta: { select: { id: true, nombre: true } } },
-    });
-  }
-
-  async remove(id: string) {
-    await this.findOne(id);
-    await this.prisma.dispositivoStock.delete({ where: { id } });
-    return { message: `Dispositivo "${id}" eliminado correctamente` };
-  }
-}
-</file>
-
-<file path="src/dispositivos-stock/dto/create-dispositivo.dto.ts">
-import { IsString, IsBoolean, IsOptional, IsInt, Min, Matches, Length, IsUUID, IsEnum } from 'class-validator';
-import { Type } from 'class-transformer';
-import { EstadoDispositivo } from '@prisma/client';
-
-export class CreateDispositivoDto {
-  @IsString() @Length(15, 15, { message: 'El IMEI debe tener exactamente 15 dígitos' })
-  @Matches(/^\d{15}$/, { message: 'El IMEI solo debe contener números' })
-  imei: string;
-
-  @IsOptional() @IsString() memoria?: string;
-  @IsOptional() @IsString() color?: string;
-  @IsOptional() @IsInt() @Min(0) @Type(() => Number) bateria?: number;
-  @IsOptional() @IsBoolean() usado?: boolean;
-  @IsOptional() @IsEnum(EstadoDispositivo) estado?: EstadoDispositivo;
-  @IsOptional() @IsString() notas?: string;
-
-  @IsUUID() catalogoItemId: string;
-  @IsUUID() puntoDeVentaId: string;
-  @IsOptional() @IsUUID() proveedorId?: string;
-}
-</file>
-
-<file path="src/dispositivos-stock/dto/filter-dispositivo.dto.ts">
-import { IsOptional, IsBoolean, IsEnum, IsInt, Min, Max, IsUUID } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
-import { EstadoDispositivo } from '@prisma/client';
-
-export class FilterDispositivoDto {
-  @IsOptional() @IsUUID() puntoDeVentaId?: string;
-  @IsOptional() @IsUUID() catalogoItemId?: string;
-  @IsOptional() @Transform(({ value }) => value === 'true' ? true : value === 'false' ? false : value) @IsBoolean() usado?: boolean;
-  @IsOptional() @IsEnum(EstadoDispositivo) estado?: EstadoDispositivo;
-  @IsOptional() @IsInt() @Min(1) @Max(100) @Type(() => Number) limit?: number = 20;
-  @IsOptional() @IsInt() @Min(1) @Type(() => Number) page?: number = 1;
-}
-</file>
-
-<file path="src/dispositivos-stock/dto/update-dispositivos.dto.ts">
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateDispositivoDto } from './create-dispositivo.dto';
-export class UpdateDispositivoDto extends PartialType(CreateDispositivoDto) {}
-</file>
-
-<file path="src/dispositivos-stock/entities/dispositivos-stock.entity.ts">
-export class DispositivosStock {}
-</file>
 
 <file path=".gitignore">
 # compiled output
@@ -1366,10 +219,436 @@ export default tseslint.config(
 );
 </file>
 
+<file path="prisma/migrations/20260312190533_init/migration.sql">
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('ADMIN', 'VENDEDOR');
+
+-- CreateTable
+CREATE TABLE "users" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "nombre" TEXT NOT NULL,
+    "password_hash" TEXT NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'VENDEDOR',
+    "refresh_token" TEXT,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "accesorios" (
+    "id" TEXT NOT NULL,
+    "nombre" TEXT NOT NULL,
+    "modelo" TEXT NOT NULL,
+    "tipo" TEXT NOT NULL,
+    "descripcion" TEXT,
+    "cantidad" INTEGER NOT NULL DEFAULT 0,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "punto_de_venta_id" TEXT NOT NULL,
+
+    CONSTRAINT "accesorios_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "accesorio_colores" (
+    "id" TEXT NOT NULL,
+    "color" TEXT NOT NULL,
+    "accesorio_id" TEXT NOT NULL,
+
+    CONSTRAINT "accesorio_colores_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "accesorio_imagenes" (
+    "id" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "orden" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "accesorio_id" TEXT NOT NULL,
+
+    CONSTRAINT "accesorio_imagenes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sub_accesorios" (
+    "id" TEXT NOT NULL,
+    "nombre" TEXT NOT NULL,
+    "tipo" TEXT NOT NULL,
+    "descripcion" TEXT,
+    "cantidad" INTEGER NOT NULL DEFAULT 0,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "punto_de_venta_id" TEXT NOT NULL,
+
+    CONSTRAINT "sub_accesorios_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sub_accesorio_colores" (
+    "id" TEXT NOT NULL,
+    "color" TEXT NOT NULL,
+    "sub_accesorio_id" TEXT NOT NULL,
+
+    CONSTRAINT "sub_accesorio_colores_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sub_accesorio_imagenes" (
+    "id" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "orden" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "sub_accesorio_id" TEXT NOT NULL,
+
+    CONSTRAINT "sub_accesorio_imagenes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "puntos_de_venta" (
+    "id" TEXT NOT NULL,
+    "nombre" TEXT NOT NULL,
+    "direccion" TEXT,
+    "ciudad" TEXT,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "puntos_de_venta_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE INDEX "users_email_idx" ON "users"("email");
+
+-- CreateIndex
+CREATE INDEX "accesorios_punto_de_venta_id_idx" ON "accesorios"("punto_de_venta_id");
+
+-- CreateIndex
+CREATE INDEX "accesorios_nombre_idx" ON "accesorios"("nombre");
+
+-- CreateIndex
+CREATE INDEX "accesorios_tipo_idx" ON "accesorios"("tipo");
+
+-- CreateIndex
+CREATE INDEX "accesorio_colores_accesorio_id_idx" ON "accesorio_colores"("accesorio_id");
+
+-- CreateIndex
+CREATE INDEX "accesorio_imagenes_accesorio_id_idx" ON "accesorio_imagenes"("accesorio_id");
+
+-- CreateIndex
+CREATE INDEX "sub_accesorios_punto_de_venta_id_idx" ON "sub_accesorios"("punto_de_venta_id");
+
+-- CreateIndex
+CREATE INDEX "sub_accesorios_nombre_idx" ON "sub_accesorios"("nombre");
+
+-- CreateIndex
+CREATE INDEX "sub_accesorios_tipo_idx" ON "sub_accesorios"("tipo");
+
+-- CreateIndex
+CREATE INDEX "sub_accesorio_colores_sub_accesorio_id_idx" ON "sub_accesorio_colores"("sub_accesorio_id");
+
+-- CreateIndex
+CREATE INDEX "sub_accesorio_imagenes_sub_accesorio_id_idx" ON "sub_accesorio_imagenes"("sub_accesorio_id");
+
+-- AddForeignKey
+ALTER TABLE "accesorios" ADD CONSTRAINT "accesorios_punto_de_venta_id_fkey" FOREIGN KEY ("punto_de_venta_id") REFERENCES "puntos_de_venta"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "accesorio_colores" ADD CONSTRAINT "accesorio_colores_accesorio_id_fkey" FOREIGN KEY ("accesorio_id") REFERENCES "accesorios"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "accesorio_imagenes" ADD CONSTRAINT "accesorio_imagenes_accesorio_id_fkey" FOREIGN KEY ("accesorio_id") REFERENCES "accesorios"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "sub_accesorios" ADD CONSTRAINT "sub_accesorios_punto_de_venta_id_fkey" FOREIGN KEY ("punto_de_venta_id") REFERENCES "puntos_de_venta"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "sub_accesorio_colores" ADD CONSTRAINT "sub_accesorio_colores_sub_accesorio_id_fkey" FOREIGN KEY ("sub_accesorio_id") REFERENCES "sub_accesorios"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "sub_accesorio_imagenes" ADD CONSTRAINT "sub_accesorio_imagenes_sub_accesorio_id_fkey" FOREIGN KEY ("sub_accesorio_id") REFERENCES "sub_accesorios"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+</file>
+
 <file path="prisma/migrations/migration_lock.toml">
 # Please do not edit this file manually
 # It should be added in your version-control system (e.g., Git)
 provider = "postgresql"
+</file>
+
+<file path="src/accesorios/accesorios.controller.spec.ts">
+import { Test, TestingModule } from '@nestjs/testing';
+import { AccesoriosController } from './accesorios.controller';
+import { AccesoriosService } from './accesorios.service';
+
+describe('AccesoriosController', () => {
+  let controller: AccesoriosController;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AccesoriosController],
+      providers: [AccesoriosService],
+    }).compile();
+
+    controller = module.get<AccesoriosController>(AccesoriosController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+</file>
+
+<file path="src/accesorios/accesorios.controller.ts">
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { AccesoriosService } from './accesorios.service';
+import { CreateAccesorioDto } from './dto/create-accesorio.dto';
+import { UpdateAccesorioDto } from './dto/update-accesorio.dto';
+import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
+
+@UseGuards(JwtAccessGuard)
+@Controller('accesorios')
+export class AccesoriosController {
+  constructor(private readonly accesoriosService: AccesoriosService) {}
+
+  @Post()
+  create(@Body() dto: CreateAccesorioDto) {
+    return this.accesoriosService.create(dto);
+  }
+
+  @Get()
+  findAll() {
+    return this.accesoriosService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.accesoriosService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateAccesorioDto) {
+    return this.accesoriosService.update(id, dto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.accesoriosService.remove(id);
+  }
+}
+</file>
+
+<file path="src/accesorios/accesorios.module.ts">
+import { Module } from '@nestjs/common';
+import { AccesoriosController } from './accesorios.controller';
+import { AccesoriosService } from './accesorios.service';
+
+@Module({
+  controllers: [AccesoriosController],
+  providers: [AccesoriosService],
+  exports: [AccesoriosService],
+})
+export class AccesoriosModule {}
+</file>
+
+<file path="src/accesorios/accesorios.service.spec.ts">
+import { Test, TestingModule } from '@nestjs/testing';
+import { AccesoriosService } from './accesorios.service';
+
+describe('AccesoriosService', () => {
+  let service: AccesoriosService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [AccesoriosService],
+    }).compile();
+
+    service = module.get<AccesoriosService>(AccesoriosService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});
+</file>
+
+<file path="src/accesorios/accesorios.service.ts">
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateAccesorioDto } from './dto/create-accesorio.dto';
+import { UpdateAccesorioDto } from './dto/update-accesorio.dto';
+
+@Injectable()
+export class AccesoriosService {
+  constructor(private prisma: PrismaService) {}
+
+  async create(dto: CreateAccesorioDto) {
+    return this.prisma.accesorio.create({
+      data: {
+        nombre: dto.nombre,
+        modelo: dto.modelo,
+        tipo: dto.tipo,
+        descripcion: dto.descripcion,
+        cantidad: dto.cantidad ?? 0,
+        colores: {
+          create: dto.colores?.map((color) => ({ color })) ?? [],
+        },
+        imagenes: {
+          create: dto.imagenes?.map((url, i) => ({ url, orden: i })) ?? [],
+        },
+        puntoDeVentaId: dto.puntoDeVentaId,
+      },
+      include: { colores: true, imagenes: true },
+    });
+  }
+
+  async findAll() {
+    return this.prisma.accesorio.findMany({
+      where: { isActive: true },
+      include: { colores: true, imagenes: { orderBy: { orden: 'asc' } } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findOne(id: string) {
+    const accesorio = await this.prisma.accesorio.findUnique({
+      where: { id },
+      include: { colores: true, imagenes: { orderBy: { orden: 'asc' } } },
+    });
+    if (!accesorio) throw new NotFoundException('Accesorio no encontrado');
+    return accesorio;
+  }
+
+  async update(id: string, dto: UpdateAccesorioDto) {
+    await this.findOne(id);
+
+    return this.prisma.accesorio.update({
+      where: { id },
+      data: {
+        nombre: dto.nombre,
+        modelo: dto.modelo,
+        tipo: dto.tipo,
+        descripcion: dto.descripcion,
+        cantidad: dto.cantidad,
+        colores: dto.colores
+          ? {
+              deleteMany: {},
+              create: dto.colores.map((color) => ({ color })),
+            }
+          : undefined,
+        imagenes: dto.imagenes
+          ? {
+              deleteMany: {},
+              create: dto.imagenes.map((url, i) => ({ url, orden: i })),
+            }
+          : undefined,
+      },
+      include: { colores: true, imagenes: true },
+    });
+  }
+
+  async remove(id: string) {
+    await this.findOne(id);
+    return this.prisma.accesorio.update({
+      where: { id },
+      data: { isActive: false },
+      select: { id: true, nombre: true, isActive: true },
+    });
+  }
+}
+</file>
+
+<file path="src/accesorios/dto/create-accesorio.dto.ts">
+import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsString, Min } from 'class-validator';
+
+export class CreateAccesorioDto {
+    @IsString()
+    nombre: string;
+
+    @IsString()
+    modelo: string;
+
+    @IsString()
+    tipo: string;
+
+    @IsOptional()
+    @IsString()
+    descripcion?: string;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    cantidad?: number;
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    colores?: string[];
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    @ArrayMaxSize(5, { message: 'No se pueden cargar más de 5 imágenes' })
+    imagenes?: string[];
+
+    @IsString()
+    puntoDeVentaId: string;
+}
+</file>
+
+<file path="src/accesorios/dto/filter-accesorio.dto.ts">
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
+ 
+export class FilterAccesorioDto {
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+ 
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
+  limit?: number = 12;
+ 
+  @IsOptional()
+  @IsString()
+  search?: string;
+ 
+  @IsOptional()
+  @IsString()
+  tipo?: string;
+ 
+  // query string llega como "true"/"false" — Transform lo convierte
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  activo?: boolean;
+ 
+  @IsOptional()
+  @IsString()
+  puntoDeVentaId?: string;
+}
+</file>
+
+<file path="src/accesorios/dto/update-accesorio.dto.ts">
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateAccesorioDto } from './create-accesorio.dto';
+
+export class UpdateAccesorioDto extends PartialType(CreateAccesorioDto) {}
+</file>
+
+<file path="src/accesorios/entities/accesorio.entity.ts">
+export class Accesorio {}
 </file>
 
 <file path="src/app.controller.spec.ts">
@@ -1423,318 +702,49 @@ export class AppService {
 }
 </file>
 
-<file path="src/imei/dto/imei-lookup-result.dto.ts">
-// src/imei/dto/imei-lookup-result.dto.ts
+<file path="src/pdv/dto/create-pdv.dto.ts">
+import { IsOptional, IsString } from 'class-validator';
 
-/**
- * The response body returned to the caller of POST /imei/process.
- *
- * The backend only validates the IMEI and persists the scan log.
- * Device information (model, color, etc.) is resolved on the frontend
- * via @zxing/library and any device lookup the client chooses to perform.
- */
-export interface ProcessImeiResponseDto {
-  imei: string;
-  scanId: string;
-  scannedAt: Date;
-}
-</file>
-
-<file path="src/imei/dto/process-imei.dto.ts">
-// src/imei/dto/process-imei.dto.ts
-import { IsString, Length, Matches } from 'class-validator';
-
-export class ProcessImeiDto {
-  /**
-   * The 15-digit IMEI number to look up.
-   * Must contain exactly 15 numeric digits.
-   */
-  @IsString({ message: 'El IMEI debe ser un string.' })
-  @Length(15, 15, { message: 'El IMEI debe tener exactamente 15 dígitos.' })
-  @Matches(/^\d{15}$/, { message: 'El IMEI solo debe contener dígitos numéricos.' })
-  imei: string;
-}
-</file>
-
-<file path="src/imei/imei.controller.spec.ts">
-import { Test, TestingModule } from '@nestjs/testing';
-import { ImeiController } from './imei.controller';
-import { ImeiService } from './imei.service';
-
-describe('ImeiController', () => {
-  let controller: ImeiController;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [ImeiController],
-      providers: [ImeiService],
-    }).compile();
-
-    controller = module.get<ImeiController>(ImeiController);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
-</file>
-
-<file path="src/imei/imei.controller.ts">
-// src/imei/imei.controller.ts
-import {
-  Controller,
-  Post,
-  Body,
-  Param,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-} from '@nestjs/common';
-import { ImeiService } from './imei.service';
-import { ProcessImeiDto } from './dto/process-imei.dto';
-import { LuhnValidationPipe } from './pipes/luhn-validation.pipe';
-import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
-
-@Controller('imei')
-@UseGuards(JwtAccessGuard)
-export class ImeiController {
-  constructor(private readonly imeiService: ImeiService) {}
-
-  /**
-   * POST /imei/process
-   *
-   * Validates the IMEI (format via DTO + Luhn via pipe), queries the external
-   * lookup API, persists the result and returns structured device information.
-   *
-   * Requires a valid JWT access token (Bearer).
-   */
-  @Post('process')
-  @HttpCode(HttpStatus.OK)
-  async processImei(
-    @Body() dto: ProcessImeiDto,
-    // Apply Luhn pipe only to the imei field extracted from the validated DTO
-    @Body('imei', LuhnValidationPipe) imei: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
-    return this.imeiService.processImei(imei, user.sub);
-  }
-}
-</file>
-
-<file path="src/imei/imei.module.ts">
-// src/imei/imei.module.ts
-import { Module } from '@nestjs/common';
-import { ImeiController } from './imei.controller';
-import { ImeiService } from './imei.service';
-
-/**
- * ImeiModule
- *
- * Handles IMEI scanning: validates format + Luhn checksum,
- * then persists an audit log in ImeiScanLog.
- *
- * PrismaModule is already global — no need to re-import.
- *
- * Register in AppModule:
- *   imports: [..., ImeiModule]
- */
-@Module({
-  controllers: [ImeiController],
-  providers: [ImeiService],
-  exports: [ImeiService],
-})
-export class ImeiModule {}
-</file>
-
-<file path="src/imei/imei.service.spec.ts">
-import { Test, TestingModule } from '@nestjs/testing';
-import { ImeiService } from './imei.service';
-
-describe('ImeiService', () => {
-  let service: ImeiService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [ImeiService],
-    }).compile();
-
-    service = module.get<ImeiService>(ImeiService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
-</file>
-
-<file path="src/imei/imei.service.ts">
-// src/imei/imei.service.ts
-import {
-  Injectable,
-  Logger,
-  InternalServerErrorException,
-} from '@nestjs/common';
-import { ImeiScanStatus } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { ProcessImeiResponseDto } from './dto/imei-lookup-result.dto';
-
-@Injectable()
-export class ImeiService {
-  private readonly logger = new Logger(ImeiService.name);
-
-  constructor(private readonly prisma: PrismaService) {}
-
-  async processImei(imei: string, userId: string): Promise<ProcessImeiResponseDto> {
-    try {
-      const scanLog = await this.prisma.imeiScanLog.create({
-        data: {
-          imei,
-          status: ImeiScanStatus.SUCCESS,
-          userId,
-        },
-      });
-
-      this.logger.log(`IMEI ${imei} escaneado correctamente por usuario ${userId}`);
-
-      return {
-        imei,
-        scanId: scanLog.id,
-        scannedAt: scanLog.createdAt,
-      };
-    } catch (error) {
-      this.logger.error(
-        `Error al persistir el escaneo del IMEI ${imei}`,
-        (error as Error).stack,
-      );
-      throw new InternalServerErrorException(
-        'Error interno al registrar el escaneo del IMEI.',
-      );
-    }
-  }
-}
-</file>
-
-<file path="src/imei/pipes/luhn-validation.pipe.ts">
-// src/imei/pipes/luhn-validation.pipe.ts
-import {
-  PipeTransform,
-  Injectable,
-  ArgumentMetadata,
-  UnprocessableEntityException,
-} from '@nestjs/common';
-
-/**
- * Validates that the incoming value passes the Luhn (mod-10) checksum algorithm.
- *
- * This pipe is meant to be applied AFTER class-validator has already ensured
- * the value is a 15-digit numeric string (via ProcessImeiDto).
- *
- * Algorithm steps:
- *  1. Starting from the rightmost digit (check digit), double every second digit
- *     moving left (i.e. digits at odd positions from the right, 0-indexed).
- *  2. If doubling produces a value > 9, subtract 9.
- *  3. Sum all digits.
- *  4. A valid IMEI produces a sum divisible by 10.
- */
-@Injectable()
-export class LuhnValidationPipe implements PipeTransform<string, string> {
-  transform(value: string, _metadata: ArgumentMetadata): string {
-    if (!this.passesLuhn(value)) {
-      throw new UnprocessableEntityException(
-        `El IMEI "${value}" no supera la validación del algoritmo de Luhn. Verifique el número e intente nuevamente.`,
-      );
-    }
-    return value;
-  }
-
-  /**
-   * Returns true if the numeric string passes the Luhn checksum.
-   */
-  private passesLuhn(imei: string): boolean {
-    let sum = 0;
-    let shouldDouble = false;
-
-    // Traverse from rightmost digit to leftmost
-    for (let i = imei.length - 1; i >= 0; i--) {
-      let digit = parseInt(imei.charAt(i), 10);
-
-      if (shouldDouble) {
-        digit *= 2;
-        if (digit > 9) {
-          digit -= 9;
-        }
-      }
-
-      sum += digit;
-      shouldDouble = !shouldDouble;
-    }
-
-    return sum % 10 === 0;
-  }
-}
-</file>
-
-<file path="src/punto-de-venta/dto/create-pdv.dto.ts">
-// src/punto-de-venta/dto/create-pdv.dto.ts
-import { IsString, IsOptional, MinLength, MaxLength } from 'class-validator';
-
-export class CreatePdvDto {
+export class CreatePuntoDeVentaDto {
   @IsString()
-  @MinLength(2)
-  @MaxLength(100)
   nombre: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(200)
   direccion?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(80)
   ciudad?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(30)
-  telefono?: string;
 }
 </file>
 
-<file path="src/punto-de-venta/dto/update-pdv.ts">
-// src/punto-de-venta/dto/update-pdv.dto.ts
+<file path="src/pdv/dto/update-pdv.dto.ts">
 import { PartialType } from '@nestjs/mapped-types';
-import { CreatePdvDto } from './create-pdv.dto';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { CreatePuntoDeVentaDto } from './create-pdv.dto';
 
-export class UpdatePdvDto extends PartialType(CreatePdvDto) {
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-}
+export class UpdatePuntoDeVentaDto extends PartialType(CreatePuntoDeVentaDto) {}
 </file>
 
-<file path="src/punto-de-venta/entities/punto-de-venta.entity.ts">
-export class PuntoDeVenta {}
+<file path="src/pdv/entities/pdv.entity.ts">
+export class Pdv {}
 </file>
 
-<file path="src/punto-de-venta/punto-de-venta.controller.spec.ts">
+<file path="src/pdv/pdv.controller.spec.ts">
 import { Test, TestingModule } from '@nestjs/testing';
-import { PuntoDeVentaController } from './punto-de-venta.controller';
-import { PuntoDeVentaService } from './punto-de-venta.service';
+import { PdvController } from './pdv.controller';
+import { PdvService } from './pdv.service';
 
-describe('PuntoDeVentaController', () => {
-  let controller: PuntoDeVentaController;
+describe('PdvController', () => {
+  let controller: PdvController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [PuntoDeVentaController],
-      providers: [PuntoDeVentaService],
+      controllers: [PdvController],
+      providers: [PdvService],
     }).compile();
 
-    controller = module.get<PuntoDeVentaController>(PuntoDeVentaController);
+    controller = module.get<PdvController>(PdvController);
   });
 
   it('should be defined', () => {
@@ -1743,110 +753,58 @@ describe('PuntoDeVentaController', () => {
 });
 </file>
 
-<file path="src/punto-de-venta/punto-de-venta.controller.ts">
-// src/punto-de-venta/punto-de-venta.controller.ts
-import {
-  Controller, Get, Post, Patch, Delete,
-  Body, Param, Query, HttpCode, HttpStatus,
-  UseGuards, ParseUUIDPipe,
-} from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { PuntoDeVentaService } from './punto-de-venta.service';
+<file path="src/pdv/pdv.controller.ts">
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { CreatePdvDto } from './dto/create-pdv.dto';
-import { UpdatePdvDto } from './dto/update-pdv';
+import { PuntoDeVentaService } from './pdv.service';
+import { CreatePuntoDeVentaDto } from './dto/create-pdv.dto';
+import { UpdatePuntoDeVentaDto } from './dto/update-pdv.dto';
 
-@Controller('puntos-de-venta')
-@UseGuards(JwtAccessGuard, RolesGuard)
+@UseGuards(JwtAccessGuard)
+@Controller('pdv')
 export class PuntoDeVentaController {
-  constructor(private readonly pdvService: PuntoDeVentaService) {}
+  constructor(private readonly puntoDeVentaService: PuntoDeVentaService) {}
 
-  /** POST /puntos-de-venta — Solo ADMIN */
   @Post()
-  @Roles(Role.ADMIN)
-  @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: CreatePdvDto) {
-    return this.pdvService.create(dto);
+  create(@Body() dto: CreatePuntoDeVentaDto) {
+    return this.puntoDeVentaService.create(dto);
   }
 
-  /** GET /puntos-de-venta */
   @Get()
   findAll() {
-    return this.pdvService.findAll();
+    return this.puntoDeVentaService.findAll();
   }
 
-  /** GET /puntos-de-venta/:id */
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.pdvService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.puntoDeVentaService.findOne(id);
   }
 
-  /** PATCH /puntos-de-venta/:id — Solo ADMIN */
   @Patch(':id')
-  @Roles(Role.ADMIN)
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdatePdvDto,
-  ) {
-    return this.pdvService.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: UpdatePuntoDeVentaDto) {
+    return this.puntoDeVentaService.update(id, dto);
   }
 
-  /** DELETE /puntos-de-venta/:id — Solo ADMIN (soft delete) */
   @Delete(':id')
-  @Roles(Role.ADMIN)
-  @HttpCode(HttpStatus.OK)
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.pdvService.remove(id);
-  }
-
-  /** GET /puntos-de-venta/:id/productos — Unidades físicas del PdV */
-  @Get(':id/productos')
-  findProductos(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query('categoria') categoria?: string,
-    @Query('usado') usado?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.pdvService.findUnidades(id, {
-      categoria,
-      usado: usado !== undefined ? usado === 'true' : undefined,
-      page: page ? parseInt(page) : 1,
-      limit: limit ? parseInt(limit) : 20,
-    });
+  remove(@Param('id') id: string) {
+    return this.puntoDeVentaService.remove(id);
   }
 }
 </file>
 
-<file path="src/punto-de-venta/punto-de-venta.module.ts">
-// src/punto-de-venta/punto-de-venta.module.ts
-import { Module } from '@nestjs/common';
-import { PuntoDeVentaController } from './punto-de-venta.controller';
-import { PuntoDeVentaService } from './punto-de-venta.service';
-
-@Module({
-  controllers: [PuntoDeVentaController],
-  providers: [PuntoDeVentaService],
-  exports: [PuntoDeVentaService],
-})
-export class PuntoDeVentaModule {}
-</file>
-
-<file path="src/punto-de-venta/punto-de-venta.service.spec.ts">
+<file path="src/pdv/pdv.service.spec.ts">
 import { Test, TestingModule } from '@nestjs/testing';
-import { PuntoDeVentaService } from './punto-de-venta.service';
+import { PdvService } from './pdv.service';
 
-describe('PuntoDeVentaService', () => {
-  let service: PuntoDeVentaService;
+describe('PdvService', () => {
+  let service: PdvService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PuntoDeVentaService],
+      providers: [PdvService],
     }).compile();
 
-    service = module.get<PuntoDeVentaService>(PuntoDeVentaService);
+    service = module.get<PdvService>(PdvService);
   });
 
   it('should be defined', () => {
@@ -1855,62 +813,289 @@ describe('PuntoDeVentaService', () => {
 });
 </file>
 
-<file path="src/punto-de-venta/punto-de-venta.service.ts">
+<file path="src/pdv/pdv.service.ts">
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreatePdvDto } from './dto/create-pdv.dto';
-import { UpdatePdvDto } from './dto/update-pdv';
+import { CreatePuntoDeVentaDto } from './dto/create-pdv.dto';
+import { UpdatePuntoDeVentaDto } from './dto/update-pdv.dto';
 
 @Injectable()
 export class PuntoDeVentaService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreatePdvDto) {
-    return this.prisma.puntoDeVenta.create({ data: dto });
+  async create(dto: CreatePuntoDeVentaDto) {
+    return this.prisma.puntoDeVenta.create({
+      data: {
+        nombre: dto.nombre,
+        direccion: dto.direccion,
+        ciudad: dto.ciudad,
+      },
+    });
   }
 
   async findAll() {
     return this.prisma.puntoDeVenta.findMany({
       where: { isActive: true },
-      orderBy: { nombre: 'asc' },
-      include: {
-        _count: {
-          select: {
-            catalogoItems: { where: { isActive: true } },
-            dispositivos: true,
-            accesorios: { where: { isActive: true } },
-          },
-        },
-      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async findOne(id: string) {
     const pdv = await this.prisma.puntoDeVenta.findUnique({
       where: { id },
-      include: {
-        _count: {
-          select: {
-            catalogoItems: { where: { isActive: true } },
-            dispositivos: true,
-            accesorios: { where: { isActive: true } },
-          },
-        },
-      },
     });
-    if (!pdv) throw new NotFoundException(`Punto de venta "${id}" no encontrado`);
+    if (!pdv) throw new NotFoundException('Punto de venta no encontrado');
     return pdv;
   }
 
-  async update(id: string, dto: UpdatePdvDto) {
+  async update(id: string, dto: UpdatePuntoDeVentaDto) {
     await this.findOne(id);
-    return this.prisma.puntoDeVenta.update({ where: { id }, data: dto });
+    return this.prisma.puntoDeVenta.update({
+      where: { id },
+      data: {
+        nombre: dto.nombre,
+        direccion: dto.direccion,
+        ciudad: dto.ciudad,
+      },
+    });
   }
 
   async remove(id: string) {
     await this.findOne(id);
-    await this.prisma.puntoDeVenta.update({ where: { id }, data: { isActive: false } });
-    return { message: `Punto de venta "${id}" desactivado correctamente` };
+    return this.prisma.puntoDeVenta.update({
+      where: { id },
+      data: { isActive: false },
+      select: { id: true, nombre: true, isActive: true },
+    });
+  }
+}
+</file>
+
+<file path="src/sub-accesorios/dto/create-sub-accesorio.dto.ts">
+import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsString, Min } from 'class-validator';
+
+export class CreateSubAccesorioDto {
+    @IsString()
+    nombre: string;
+
+    @IsString()
+    tipo: string;
+
+    @IsOptional()
+    @IsString()
+    descripcion?: string;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    cantidad?: number;
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    colores?: string[];
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    @ArrayMaxSize(5, { message: 'No se pueden cargar más de 5 imágenes' })
+    imagenes?: string[];
+
+    @IsString()
+    puntoDeVentaId: string;
+}
+</file>
+
+<file path="src/sub-accesorios/dto/update-sub-accesorio.dto.ts">
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateSubAccesorioDto } from './create-sub-accesorio.dto';
+
+export class UpdateSubAccesorioDto extends PartialType(CreateSubAccesorioDto) {}
+</file>
+
+<file path="src/sub-accesorios/entities/sub-accesorio.entity.ts">
+export class SubAccesorio {}
+</file>
+
+<file path="src/sub-accesorios/sub-accesorios.controller.spec.ts">
+import { Test, TestingModule } from '@nestjs/testing';
+import { SubAccesoriosController } from './sub-accesorios.controller';
+import { SubAccesoriosService } from './sub-accesorios.service';
+
+describe('SubAccesoriosController', () => {
+  let controller: SubAccesoriosController;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [SubAccesoriosController],
+      providers: [SubAccesoriosService],
+    }).compile();
+
+    controller = module.get<SubAccesoriosController>(SubAccesoriosController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+</file>
+
+<file path="src/sub-accesorios/sub-accesorios.controller.ts">
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { SubAccesoriosService } from './sub-accesorios.service';
+import { CreateSubAccesorioDto } from './dto/create-sub-accesorio.dto';
+import { UpdateSubAccesorioDto } from './dto/update-sub-accesorio.dto';
+import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
+
+@UseGuards(JwtAccessGuard)
+@Controller('sub-accesorios')
+export class SubAccesoriosController {
+  constructor(private readonly subAccesoriosService: SubAccesoriosService) {}
+
+  @Post()
+  create(@Body() dto: CreateSubAccesorioDto) {
+    return this.subAccesoriosService.create(dto);
+  }
+
+  @Get()
+  findAll() {
+    return this.subAccesoriosService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.subAccesoriosService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateSubAccesorioDto) {
+    return this.subAccesoriosService.update(id, dto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.subAccesoriosService.remove(id);
+  }
+}
+</file>
+
+<file path="src/sub-accesorios/sub-accesorios.module.ts">
+import { Module } from '@nestjs/common';
+import { SubAccesoriosController } from './sub-accesorios.controller';
+import { SubAccesoriosService } from './sub-accesorios.service';
+
+@Module({
+  controllers: [SubAccesoriosController],
+  providers: [SubAccesoriosService],
+  exports: [SubAccesoriosService],
+})
+export class SubAccesoriosModule {}
+</file>
+
+<file path="src/sub-accesorios/sub-accesorios.service.spec.ts">
+import { Test, TestingModule } from '@nestjs/testing';
+import { SubAccesoriosService } from './sub-accesorios.service';
+
+describe('SubAccesoriosService', () => {
+  let service: SubAccesoriosService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [SubAccesoriosService],
+    }).compile();
+
+    service = module.get<SubAccesoriosService>(SubAccesoriosService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});
+</file>
+
+<file path="src/sub-accesorios/sub-accesorios.service.ts">
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateSubAccesorioDto } from './dto/create-sub-accesorio.dto';
+import { UpdateSubAccesorioDto } from './dto/update-sub-accesorio.dto';
+
+@Injectable()
+export class SubAccesoriosService {
+  constructor(private prisma: PrismaService) {}
+
+  async create(dto: CreateSubAccesorioDto) {
+    return this.prisma.subAccesorio.create({
+      data: {
+        nombre: dto.nombre,
+        tipo: dto.tipo,
+        descripcion: dto.descripcion,
+        cantidad: dto.cantidad ?? 0,
+        colores: {
+          create: dto.colores?.map((color) => ({ color })) ?? [],
+        },
+        imagenes: {
+          create: dto.imagenes?.map((url, i) => ({ url, orden: i })) ?? [],
+        },
+        puntoDeVentaId: dto.puntoDeVentaId
+      },
+      include: { colores: true, imagenes: true },
+    });
+  }
+
+  async findAll(puntoDeVentaId?: string) {
+    return this.prisma.subAccesorio.findMany({
+      where: { 
+        isActive: true,
+        ...(puntoDeVentaId && { puntoDeVentaId }) 
+      },
+      include: { colores: true, imagenes: { orderBy: { orden: 'asc' } } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findOne(id: string) {
+    const sub = await this.prisma.subAccesorio.findUnique({
+      where: { id },
+      include: { colores: true, imagenes: { orderBy: { orden: 'asc' } } },
+    });
+    if (!sub) throw new NotFoundException('SubAccesorio no encontrado');
+    return sub;
+  }
+
+  async update(id: string, dto: UpdateSubAccesorioDto) {
+    await this.findOne(id);
+
+    return this.prisma.subAccesorio.update({
+      where: { id },
+      data: {
+        nombre: dto.nombre,
+        tipo: dto.tipo,
+        descripcion: dto.descripcion,
+        cantidad: dto.cantidad,
+        colores: dto.colores
+          ? {
+              deleteMany: {},
+              create: dto.colores.map((color) => ({ color })),
+            }
+          : undefined,
+        imagenes: dto.imagenes
+          ? {
+              deleteMany: {},
+              create: dto.imagenes.map((url, i) => ({ url, orden: i })),
+            }
+          : undefined,
+      },
+      include: { colores: true, imagenes: true },
+    });
+  }
+
+  async remove(id: string) {
+    await this.findOne(id);
+    return this.prisma.subAccesorio.update({
+      where: { id },
+      data: { isActive: false },
+      select: { id: true, nombre: true, isActive: true },
+    });
   }
 }
 </file>
@@ -2401,6 +1586,18 @@ export function envValidation(config: Record<string, unknown>) {
 }
 </file>
 
+<file path="src/pdv/pdv.module.ts">
+import { Module } from '@nestjs/common';
+import { PuntoDeVentaController } from './pdv.controller';
+import { PuntoDeVentaService } from './pdv.service';
+
+@Module({
+  controllers: [PuntoDeVentaController],
+  providers: [PuntoDeVentaService],
+})
+export class PdvModule {}
+</file>
+
 <file path="src/prisma/prisma.module.ts">
 // src/prisma/prisma.module.ts
 import { Global, Module } from '@nestjs/common';
@@ -2779,164 +1976,6 @@ export function useProducts(filters = {}) {
   });
 }
 */
-</file>
-
-<file path="prisma/seed.ts">
-import { PrismaClient, Categoria, Role, EstadoDispositivo } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import * as pg from 'pg';
-import * as dotenv from 'dotenv';
-import * as bcrypt from 'bcrypt';
-
-dotenv.config();
-
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
-
-async function main() {
-  console.log('🌱 Iniciando seed...');
-
-  // ─── Usuario Admin ────────────────────────────────────────────────────────
-  const passwordHash = await bcrypt.hash('Admin1234!', 10);
-  const admin = await prisma.user.upsert({
-    where: { email: 'marcos@todoapple.com' },
-    update: {},
-    create: {
-      email: 'marcos@todoapple.com',
-      nombre: 'Marcos',
-      passwordHash,
-      role: Role.ADMIN,
-    },
-  });
-  console.log('✅ Usuario admin:', admin.email);
-
-  // ─── Punto de Venta ───────────────────────────────────────────────────────
-  const pdv = await prisma.puntoDeVenta.upsert({
-    where: { id: '00000000-0000-0000-0000-000000000001' },
-    update: {},
-    create: {
-      id: '00000000-0000-0000-0000-000000000001',
-      nombre: 'Local Centro',
-      direccion: 'Bonifacio Córdoba 678',
-      ciudad: 'San Fernando del Valle de Catamarca',
-    },
-  });
-  console.log('✅ PdV:', pdv.nombre);
-
-  // ─── Catálogo Global ──────────────────────────────────────────────────────
-  const globalItemsData = [
-    { categoria: Categoria.iPhone,     modelo: 'iPhone 15 Pro',           precioSugerido: 1299.99 },
-    { categoria: Categoria.iPhone,     modelo: 'iPhone 15',               precioSugerido: 999.99  },
-    { categoria: Categoria.iPhone,     modelo: 'iPhone 14',               precioSugerido: 799.99  },
-    { categoria: Categoria.Mac,        modelo: 'MacBook Pro 14"',         precioSugerido: 1999.99 },
-    { categoria: Categoria.iPad,       modelo: 'iPad Pro 12.9"',          precioSugerido: 1099.99 },
-    { categoria: Categoria.Watch,      modelo: 'Apple Watch Series 9',    precioSugerido: 399.99  },
-    { categoria: Categoria.AirPods,    modelo: 'AirPods Pro 2da Gen',     descripcion: 'Con cancelación activa de ruido', precioSugerido: 249.99 },
-    { categoria: Categoria.Accesorios, modelo: 'Funda MagSafe iPhone 15', descripcion: 'Funda de silicona con MagSafe', precioSugerido: 49.99 },
-    { categoria: Categoria.Accesorios, modelo: 'Templado iPhone 15',      descripcion: 'Vidrio templado 9H',            precioSugerido: 19.99 },
-    { categoria: Categoria.Accesorios, modelo: 'Cable USB-C 2m',          descripcion: 'Cable trenzado USB-C a USB-C',  precioSugerido: 29.99 },
-  ];
-
-  // Crear globales y sus reflejos en el PdV, guardando los CatalogoItem ids
-  const catalogoItemIds: Record<string, string> = {};
-
-  for (const item of globalItemsData) {
-    const global = await prisma.catalogoGlobal.create({ data: item });
-    const catalogoItem = await prisma.catalogoItem.create({
-      data: { catalogoGlobalId: global.id, puntoDeVentaId: pdv.id },
-    });
-    catalogoItemIds[item.modelo] = catalogoItem.id;
-    console.log(`  ✅ Global + reflejo: ${item.modelo}`);
-  }
-
-  // ─── Dispositivos de ejemplo ──────────────────────────────────────────────
-  console.log('\n📱 Cargando dispositivos...');
-
-  const dispositivos = [
-    // iPhone 15 Pro — varios colores y memorias
-    { modelo: 'iPhone 15 Pro', imei: '354678901234563', memoria: '256GB', color: 'Titanio Negro',   bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 15 Pro', imei: '354678901234571', memoria: '256GB', color: 'Titanio Blanco',  bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 15 Pro', imei: '354678901234589', memoria: '512GB', color: 'Titanio Natural', bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 15 Pro', imei: '354678901234597', memoria: '512GB', color: 'Titanio Azul',    bateria: 87,  usado: true,  estado: EstadoDispositivo.DISPONIBLE, notas: 'Caja abierta, sin uso real' },
-    // iPhone 15
-    { modelo: 'iPhone 15',     imei: '354678901234605', memoria: '128GB', color: 'Rosa',            bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 15',     imei: '354678901234613', memoria: '128GB', color: 'Amarillo',        bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 15',     imei: '354678901234621', memoria: '256GB', color: 'Negro',           bateria: 92,  usado: true,  estado: EstadoDispositivo.DISPONIBLE, notas: 'Usado 3 meses, impecable' },
-    // iPhone 14
-    { modelo: 'iPhone 14',     imei: '354678901234639', memoria: '128GB', color: 'Medianoche',      bateria: 89,  usado: true,  estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'iPhone 14',     imei: '354678901234647', memoria: '256GB', color: 'Blanco Estelar',  bateria: 95,  usado: true,  estado: EstadoDispositivo.RESERVADO,  notas: 'Reservado para cliente' },
-    // MacBook Pro
-    { modelo: 'MacBook Pro 14"', imei: '354678901234654', memoria: '512GB', color: 'Plata',         bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    // iPad Pro
-    { modelo: 'iPad Pro 12.9"',  imei: '354678901234662', memoria: '256GB', color: 'Gris Espacial', bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    // Apple Watch
-    { modelo: 'Apple Watch Series 9', imei: '354678901234670', memoria: '32GB', color: 'Medianoche', bateria: 100, usado: false, estado: EstadoDispositivo.DISPONIBLE },
-    { modelo: 'Apple Watch Series 9', imei: '354678901234688', memoria: '32GB', color: 'Starlight',  bateria: 78,  usado: true,  estado: EstadoDispositivo.DISPONIBLE, notas: 'Con malla original' },
-  ];
-
-  for (const d of dispositivos) {
-    const catalogoItemId = catalogoItemIds[d.modelo];
-    await prisma.dispositivoStock.create({
-      data: {
-        imei:           d.imei,
-        memoria:        d.memoria,
-        color:          d.color,
-        bateria:        d.bateria,
-        usado:          d.usado,
-        estado:         d.estado,
-        notas:          d.notas ?? null,
-        catalogoItemId,
-        puntoDeVentaId: pdv.id,
-      },
-    });
-    console.log(`  ✅ ${d.modelo} ${d.memoria} ${d.color} — IMEI ${d.imei}`);
-  }
-
-  // ─── Accesorios de ejemplo ────────────────────────────────────────────────
-  console.log('\n🎒 Cargando accesorios...');
-
-  const accesorios = [
-    // Fundas MagSafe
-    { modelo: 'Funda MagSafe iPhone 15', sku: 'FMS15-ROS', color: 'Rosa',    descripcion: 'Funda silicona MagSafe Rosa',    precio: 49.99, cantidad: 8  },
-    { modelo: 'Funda MagSafe iPhone 15', sku: 'FMS15-NEG', color: 'Negro',   descripcion: 'Funda silicona MagSafe Negro',   precio: 49.99, cantidad: 5  },
-    { modelo: 'Funda MagSafe iPhone 15', sku: 'FMS15-AZU', color: 'Azul',    descripcion: 'Funda silicona MagSafe Azul',    precio: 49.99, cantidad: 3  },
-    // Templados
-    { modelo: 'Templado iPhone 15',      sku: 'TPL15-STD', color: null,      descripcion: 'Vidrio templado 9H iPhone 15',   precio: 19.99, cantidad: 20 },
-    // AirPods
-    { modelo: 'AirPods Pro 2da Gen',     sku: 'APP2-BOX',  color: 'Blanco',  descripcion: 'AirPods Pro 2da gen sellados',   precio: 249.99, cantidad: 4 },
-    // Cables
-    { modelo: 'Cable USB-C 2m',          sku: 'CBL-UC2M',  color: 'Blanco',  descripcion: 'Cable trenzado USB-C 2 metros',  precio: 29.99, cantidad: 15 },
-    { modelo: 'Cable USB-C 2m',          sku: 'CBL-UC2M-N', color: 'Negro',  descripcion: 'Cable trenzado USB-C 2 metros',  precio: 29.99, cantidad: 10 },
-  ];
-
-  for (const a of accesorios) {
-    const catalogoItemId = catalogoItemIds[a.modelo];
-    await prisma.accesorioStock.create({
-      data: {
-        sku:            a.sku,
-        color:          a.color,
-        descripcion:    a.descripcion,
-        precio:         a.precio,
-        cantidad:       a.cantidad,
-        catalogoItemId,
-        puntoDeVentaId: pdv.id,
-      },
-    });
-    console.log(`  ✅ ${a.modelo} ${a.color ?? ''} — stock: ${a.cantidad}`);
-  }
-
-  console.log('\n🎉 Seed completado');
-  console.log('─────────────────────────────────────');
-  console.log(`👤 Admin: marcos@todoapple.com / Admin1234!`);
-  console.log(`🏪 PdV:   Local Centro — Catamarca`);
-  console.log(`📱 Dispositivos: ${dispositivos.length}`);
-  console.log(`🎒 Accesorios:   ${accesorios.length} líneas de stock`);
-}
-
-main()
-  .catch((e) => { console.error('❌', e); process.exit(1); })
-  .finally(async () => { await prisma.$disconnect(); await pool.end(); });
 </file>
 
 <file path="README.md">
@@ -3653,54 +2692,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
 }
 </file>
 
-<file path="src/main.ts">
-// src/main.ts
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { LoggingMiddleware } from './common/middleware/logging.middleware';
-
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
-  const logger = new Logger('Bootstrap');
-
-  // CORS
-  app.enableCors({
-    origin: configService.get<string>('FRONTEND_URL', '*'),
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  });
-
-  // Global pipes
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      transformOptions: { enableImplicitConversion: true },
-    }),
-  );
-
-  // Global filters
-  app.useGlobalFilters(new HttpExceptionFilter());
-
-  // Global interceptors
-  app.useGlobalInterceptors(new ResponseInterceptor());
-
-  const port = configService.get<number>('PORT', 3000);
-  await app.listen(port);
-
-  logger.log(`🚀 Apple Stock API corriendo en: http://localhost:${port}`);
-}
-
-bootstrap();
-</file>
-
 <file path="src/prisma/prisma.service.ts">
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
@@ -3834,20 +2825,290 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 }
 </file>
 
+<file path="prisma/seed.ts">
+// prisma/seed.ts
+import { PrismaClient, Role } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import * as pg from 'pg';
+import * as dotenv from 'dotenv';
+import * as bcrypt from 'bcrypt';
+
+dotenv.config();
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+
+async function main() {
+  console.log('🌱 Iniciando seed...');
+
+  // ─── Usuarios Admin ───────────────────────────────────────────────────────
+  const users = [
+    { email: 'marcos@todoapple.com', nombre: 'Marcos' },
+    { email: 'store@todoapple.com',  nombre: 'Store'  },
+  ];
+
+  for (const u of users) {
+    const passwordHash = await bcrypt.hash(u.email, 10);
+    const user = await prisma.user.upsert({
+      where:  { email: u.email },
+      update: {},
+      create: {
+        email: u.email,
+        nombre: u.nombre,
+        passwordHash,
+        role: Role.ADMIN,
+      },
+    });
+    console.log(`✅ Usuario admin: ${user.email} / ${u.email}`);
+  }
+
+  // ─── Punto de Venta ───────────────────────────────────────────────────────
+  const pdv = await prisma.puntoDeVenta.upsert({
+    where: { id: '00000000-0000-0000-0000-000000000001' },
+    update: {},
+    create: {
+      id: '00000000-0000-0000-0000-000000000001',
+      nombre: 'Local Centro',
+      direccion: 'Bonifacio Córdoba 678',
+      ciudad: 'San Fernando del Valle de Catamarca',
+    },
+  });
+  console.log('✅ PdV:', pdv.nombre);
+
+  // ─── Accesorios de marca ──────────────────────────────────────────────────
+  console.log('\n🎒 Cargando accesorios de marca...');
+
+  const accesoriosData = [
+    {
+      nombre: 'iPhone 15',
+      modelo: 'Pro',
+      tipo: 'Funda',
+      descripcion: 'Funda de silicona con MagSafe',
+      cantidad: 16,
+      colores: ['Rosa', 'Negro', 'Azul'],
+      imagenes: [
+        'https://store.storeimages.cdn-apple.com/funda-magsafe-rosa.jpg',
+        'https://store.storeimages.cdn-apple.com/funda-magsafe-negro.jpg',
+      ],
+    },
+    {
+      nombre: 'iPhone 15',
+      modelo: 'Standard',
+      tipo: 'Templado',
+      descripcion: 'Vidrio templado 9H',
+      cantidad: 20,
+      colores: [],
+      imagenes: [
+        'https://store.storeimages.cdn-apple.com/templado-iphone15.jpg',
+      ],
+    },
+    {
+      nombre: 'iPhone 14',
+      modelo: 'Standard',
+      tipo: 'Funda',
+      descripcion: 'Funda transparente antigolpes',
+      cantidad: 10,
+      colores: ['Transparente', 'Negro'],
+      imagenes: [
+        'https://store.storeimages.cdn-apple.com/funda-iphone14-transparente.jpg',
+      ],
+    },
+    {
+      nombre: 'AirPods Pro',
+      modelo: '2da Gen',
+      tipo: 'Funda',
+      descripcion: 'Funda de silicona para AirPods Pro',
+      cantidad: 8,
+      colores: ['Blanco', 'Negro'],
+      imagenes: [
+        'https://store.storeimages.cdn-apple.com/funda-airpods-pro.jpg',
+      ],
+    },
+    {
+      nombre: 'Apple Watch',
+      modelo: 'Series 9',
+      tipo: 'Malla',
+      descripcion: 'Malla deportiva original',
+      cantidad: 6,
+      colores: ['Medianoche', 'Starlight', 'Rojo'],
+      imagenes: [
+        'https://store.storeimages.cdn-apple.com/malla-watch-s9.jpg',
+        'https://store.storeimages.cdn-apple.com/malla-watch-s9-colores.jpg',
+      ],
+    },
+  ];
+
+  for (const a of accesoriosData) {
+    const accesorio = await prisma.accesorio.create({
+      data: {
+        nombre: a.nombre,
+        modelo: a.modelo,
+        tipo: a.tipo,
+        descripcion: a.descripcion,
+        cantidad: a.cantidad,
+        puntoDeVentaId: pdv.id,
+        colores: {
+          create: a.colores.map((color) => ({ color })),
+        },
+        imagenes: {
+          create: a.imagenes.map((url, i) => ({ url, orden: i })),
+        },
+      },
+    });
+    console.log(`  ✅ ${accesorio.nombre} ${accesorio.modelo} — ${a.tipo}`);
+  }
+
+  // ─── Sub Accesorios (genéricos sin marca) ─────────────────────────────────
+  console.log('\n📦 Cargando sub accesorios genéricos...');
+
+  const subAccesoriosData = [
+    {
+      nombre: 'Cable USB-C',
+      tipo: 'Cable',
+      descripcion: 'Cable trenzado USB-C a USB-C 2 metros',
+      cantidad: 25,
+      colores: ['Blanco', 'Negro'],
+      imagenes: [
+        'https://images.example.com/cable-usbc-blanco.jpg',
+        'https://images.example.com/cable-usbc-negro.jpg',
+      ],
+    },
+    {
+      nombre: 'Cargador 20W',
+      tipo: 'Cargador',
+      descripcion: 'Cargador rápido USB-C 20W',
+      cantidad: 15,
+      colores: ['Blanco'],
+      imagenes: [
+        'https://images.example.com/cargador-20w.jpg',
+      ],
+    },
+    {
+      nombre: 'Auriculares In-Ear',
+      tipo: 'Auriculares',
+      descripcion: 'Auriculares con cable USB-C, compatibles con todos los dispositivos',
+      cantidad: 12,
+      colores: ['Blanco', 'Negro', 'Rojo'],
+      imagenes: [
+        'https://images.example.com/auriculares-inear.jpg',
+        'https://images.example.com/auriculares-inear-colores.jpg',
+      ],
+    },
+    {
+      nombre: 'Soporte de Auto',
+      tipo: 'Soporte',
+      descripcion: 'Soporte magnético para auto, compatible con MagSafe',
+      cantidad: 9,
+      colores: ['Negro'],
+      imagenes: [
+        'https://images.example.com/soporte-auto.jpg',
+      ],
+    },
+    {
+      nombre: 'Power Bank 10000mAh',
+      tipo: 'Batería',
+      descripcion: 'Batería portátil 10000mAh con carga rápida USB-C',
+      cantidad: 7,
+      colores: ['Negro', 'Blanco'],
+      imagenes: [
+        'https://images.example.com/powerbank-negro.jpg',
+        'https://images.example.com/powerbank-blanco.jpg',
+      ],
+    },
+  ];
+
+  for (const s of subAccesoriosData) {
+    const sub = await prisma.subAccesorio.create({
+      data: {
+        nombre: s.nombre,
+        tipo: s.tipo,
+        descripcion: s.descripcion,
+        cantidad: s.cantidad,
+        puntoDeVentaId: pdv.id,
+        colores: {
+          create: s.colores.map((color) => ({ color })),
+        },
+        imagenes: {
+          create: s.imagenes.map((url, i) => ({ url, orden: i })),
+        },
+      },
+    });
+    console.log(`  ✅ ${sub.nombre} — ${sub.tipo} — stock: ${s.cantidad}`);
+  }
+
+  console.log('\n🎉 Seed completado');
+  console.log('─────────────────────────────────────');
+  console.log(`👤 Admins:        marcos@todoapple.com / store@todoapple.com`);
+  console.log(`🏪 PdV:           Local Centro — Catamarca`);
+  console.log(`🎒 Accesorios:    ${accesoriosData.length}`);
+  console.log(`📦 SubAccesorios: ${subAccesoriosData.length}`);
+}
+
+main()
+  .catch((e) => { console.error('❌', e); process.exit(1); })
+  .finally(async () => { await prisma.$disconnect(); await pool.end(); });
+</file>
+
+<file path="src/main.ts">
+// src/main.ts
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { LoggingMiddleware } from './common/middleware/logging.middleware';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
+  const logger = new Logger('Bootstrap');
+
+  // CORS
+  app.enableCors({
+    origin: '*',  // ✅ string directo
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: false, // ⚠️ con origin: '*', credentials DEBE ser false
+  });
+
+  // Global pipes
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
+
+  // Global filters
+  app.useGlobalFilters(new HttpExceptionFilter());
+
+  // Global interceptors
+  app.useGlobalInterceptors(new ResponseInterceptor());
+
+  const port = configService.get<number>('PORT', 3000);
+  await app.listen(port);
+
+  logger.log(`🚀 Apple Stock API corriendo en: http://localhost:${port}`);
+}
+
+bootstrap();
+</file>
+
 <file path="src/app.module.ts">
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { ImeiModule } from './imei/imei.module';
-import { PuntoDeVentaModule } from './punto-de-venta/punto-de-venta.module';
 import { LoggingMiddleware } from './common/middleware/logging.middleware';
 import { envValidation } from './config/env.validation';
-import { CatalogoGlobalModule } from './catalogo-global/catalogo-global.module';
-import { CatalogoPdvModule } from './catalogo-pdv/catalogo-pdv.module';
-import { DispositivosStockModule } from './dispositivos-stock/dispositivos-stock.module';
-import { AccesoriosStockModule } from './accesorios-stock/accesorios-stock.module';
+import { AccesoriosModule } from './accesorios/accesorios.module';
+import { SubAccesoriosModule } from './sub-accesorios/sub-accesorios.module';
+import { PdvModule } from './pdv/pdv.module';
 
 @Module({
   imports: [
@@ -3855,12 +3116,9 @@ import { AccesoriosStockModule } from './accesorios-stock/accesorios-stock.modul
     PrismaModule,
     AuthModule,
     UsersModule,
-    ImeiModule,
-    PuntoDeVentaModule,
-    CatalogoGlobalModule,
-    CatalogoPdvModule,
-    DispositivosStockModule,
-    AccesoriosStockModule,
+    AccesoriosModule,
+    SubAccesoriosModule,
+    PdvModule,
   ],
 })
 export class AppModule implements NestModule {
@@ -3882,37 +3140,13 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────
+
 enum Role {
   ADMIN
   VENDEDOR
-}
-
-enum Categoria {
-  iPhone
-  iPad
-  Mac
-  Watch
-  AirPods
-  Accesorios
-}
-
-enum TipoMovimiento {
-  ENTRADA
-  SALIDA
-  AJUSTE
-  TRANSFERENCIA
-}
-
-enum ImeiScanStatus {
-  SUCCESS
-  INVALID_IMEI
-}
-
-enum EstadoDispositivo {
-  DISPONIBLE
-  VENDIDO
-  RESERVADO
-  BAJA
 }
 
 model User {
@@ -3926,11 +3160,115 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  imeiScans ImeiScanLog[]
-
   @@index([email])
   @@map("users")
 }
+
+// ─────────────────────────────────────────
+// ACCESORIOS DE MARCA (ej. funda para iPhone 17 Pro)
+// ─────────────────────────────────────────
+
+model Accesorio {
+  id          String   @id @default(uuid())
+  nombre      String                      // ej. "iPhone 17"
+  modelo      String                      // ej. "Pro"
+  tipo        String                      // ej. "Funda", "Templado"
+  descripcion String?
+  cantidad    Int      @default(0)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  colores  AccesorioColor[]
+  imagenes AccesorioImagen[]
+
+  puntoDeVentaId String       @map("punto_de_venta_id")
+  puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
+
+  @@index([puntoDeVentaId])
+  @@index([nombre])
+  @@index([tipo])
+  @@map("accesorios")
+}
+
+model AccesorioColor {
+  id          String    @id @default(uuid())
+  color       String
+
+  accesorioId String    @map("accesorio_id")
+  accesorio   Accesorio @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
+
+  @@index([accesorioId])
+  @@map("accesorio_colores")
+}
+
+model AccesorioImagen {
+  id          String    @id @default(uuid())
+  url         String
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  accesorioId String    @map("accesorio_id")
+  accesorio   Accesorio @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
+
+  @@index([accesorioId])
+  @@map("accesorio_imagenes")
+}
+
+// ─────────────────────────────────────────
+// ACCESORIOS GENÉRICOS (sin marca, ej. cable USB-C genérico)
+// ─────────────────────────────────────────
+
+model SubAccesorio {
+  id          String   @id @default(uuid())
+  nombre      String                      // ej. "Cable USB-C"
+  tipo        String                      // ej. "Cable", "Cargador"
+  descripcion String?
+  cantidad    Int      @default(0)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  colores  SubAccesorioColor[]
+  imagenes SubAccesorioImagen[]
+
+  puntoDeVentaId String       @map("punto_de_venta_id")
+  puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
+
+  @@index([puntoDeVentaId])
+  @@index([nombre])
+  @@index([tipo])
+  @@map("sub_accesorios")
+}
+
+model SubAccesorioColor {
+  id             String       @id @default(uuid())
+  color          String
+
+  subAccesorioId String       @map("sub_accesorio_id")
+  subAccesorio   SubAccesorio @relation(fields: [subAccesorioId], references: [id], onDelete: Cascade)
+
+  @@index([subAccesorioId])
+  @@map("sub_accesorio_colores")
+}
+
+model SubAccesorioImagen {
+  id             String       @id @default(uuid())
+  url            String
+  orden          Int          @default(0)
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  subAccesorioId String       @map("sub_accesorio_id")
+  subAccesorio   SubAccesorio @relation(fields: [subAccesorioId], references: [id], onDelete: Cascade)
+
+  @@index([subAccesorioId])
+  @@map("sub_accesorio_imagenes")
+}
+
+// ─────────────────────────────────────────
+// PUNTOS DE VENTA
+// ─────────────────────────────────────────
+
 
 model PuntoDeVenta {
   id        String   @id @default(uuid())
@@ -3941,150 +3279,10 @@ model PuntoDeVenta {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  catalogoItems CatalogoItem[]
-  dispositivos  DispositivoStock[]
-  accesorios    AccesorioStock[]
+  accesorios    Accesorio[]
+  subAccesorios SubAccesorio[]
 
   @@map("puntos_de_venta")
-}
-
-// Plantilla maestra global. No pertenece a ningún PdV.
-model CatalogoGlobal {
-  id             String    @id @default(uuid())
-  categoria      Categoria
-  modelo         String
-  descripcion    String?
-  precioSugerido Decimal   @db.Decimal(10, 2) @map("precio_sugerido")
-  isActive       Boolean   @default(true) @map("is_active")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-
-  catalogoItems CatalogoItem[]
-
-  @@index([categoria])
-  @@index([modelo])
-  @@map("catalogo_global")
-}
-
-// Reflejo de una plantilla global en un PdV específico.
-model CatalogoItem {
-  id          String   @id @default(uuid())
-  precioLocal Decimal? @db.Decimal(10, 2) @map("precio_local")
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  catalogoGlobalId String         @map("catalogo_global_id")
-  catalogoGlobal   CatalogoGlobal @relation(fields: [catalogoGlobalId], references: [id])
-
-  puntoDeVentaId String       @map("punto_de_venta_id")
-  puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
-
-  dispositivos DispositivoStock[]
-  accesorios   AccesorioStock[]
-
-  @@unique([catalogoGlobalId, puntoDeVentaId])
-  @@index([catalogoGlobalId])
-  @@index([puntoDeVentaId])
-  @@map("catalogo_items")
-}
-
-// Cada dispositivo real con IMEI único (iPhone, iPad, Mac, etc.)
-  model DispositivoStock {
-    id        String            @id @default(uuid())
-    imei      String            @unique
-    memoria   String?
-    color     String?
-    bateria   Int?
-    usado     Boolean           @default(false)
-    estado    EstadoDispositivo @default(DISPONIBLE)
-    notas     String?
-    createdAt DateTime          @default(now()) @map("created_at")
-    updatedAt DateTime          @updatedAt @map("updated_at")
-
-    catalogoItemId String       @map("catalogo_item_id")
-    catalogoItem   CatalogoItem @relation(fields: [catalogoItemId], references: [id])
-
-    puntoDeVentaId String       @map("punto_de_venta_id")
-    puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
-
-    proveedorId String?    @map("proveedor_id")
-    proveedor   Proveedor? @relation(fields: [proveedorId], references: [id])
-
-    historial HistorialDispositivo[]
-
-    @@index([imei])
-    @@index([catalogoItemId])
-    @@index([puntoDeVentaId])
-    @@index([estado])
-    @@index([usado])
-    @@map("dispositivos_stock")
-  }
-// Fundas, templados, cables, etc. — se manejan por cantidad
-model AccesorioStock {
-  id          String   @id @default(uuid())
-  sku         String?
-  color       String?
-  descripcion String?
-  precio      Decimal  @db.Decimal(10, 2)
-  cantidad    Int      @default(0)
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  catalogoItemId String       @map("catalogo_item_id")
-  catalogoItem   CatalogoItem @relation(fields: [catalogoItemId], references: [id])
-
-  puntoDeVentaId String       @map("punto_de_venta_id")
-  puntoDeVenta   PuntoDeVenta @relation(fields: [puntoDeVentaId], references: [id])
-
-  @@index([catalogoItemId])
-  @@index([puntoDeVentaId])
-  @@index([sku])
-  @@map("accesorios_stock")
-}
-
-model HistorialDispositivo {
-  id            String           @id @default(uuid())
-  dispositivoId String           @map("dispositivo_id")
-  dispositivo   DispositivoStock @relation(fields: [dispositivoId], references: [id])
-  campo         String
-  valorAntes    String?          @map("valor_antes")
-  valorDespues  String?          @map("valor_despues")
-  createdAt     DateTime         @default(now()) @map("created_at")
-
-  @@index([dispositivoId])
-  @@map("historial_dispositivos")
-}
-
-model Proveedor {
-  id        String   @id @default(uuid())
-  nombre    String
-  contacto  String?
-  email     String?  @unique
-  telefono  String?
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  dispositivos DispositivoStock[]
-
-  @@map("proveedores")
-}
-
-model ImeiScanLog {
-  id        String         @id @default(uuid())
-  imei      String
-  status    ImeiScanStatus @default(SUCCESS)
-  userId    String         @map("user_id")
-  user      User           @relation(fields: [userId], references: [id])
-  createdAt DateTime       @default(now()) @map("created_at")
-
-  @@index([imei])
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
-  @@map("imei_scan_logs")
 }
 </file>
 

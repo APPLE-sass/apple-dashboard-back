@@ -27,9 +27,16 @@ export class AccesoriosService {
     });
   }
 
-  async findAll() {
+  async findAll(filters?: { nombre?: string; tipo?: string; puntoDeVentaId?: string }) {
     return this.prisma.accesorio.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        ...(filters?.nombre && {
+          nombre: { contains: filters.nombre, mode: 'insensitive' },
+        }),
+        ...(filters?.tipo && { tipo: filters.tipo }),
+        ...(filters?.puntoDeVentaId && { puntoDeVentaId: filters.puntoDeVentaId }),
+      },
       include: { colores: true, imagenes: { orderBy: { orden: 'asc' } } },
       orderBy: { createdAt: 'desc' },
     });
