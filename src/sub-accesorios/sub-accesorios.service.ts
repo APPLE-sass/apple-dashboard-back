@@ -27,7 +27,7 @@ export class SubAccesoriosService {
   }
 
   async findAll(filters?: { nombre?: string; tipo?: string; puntoDeVentaId?: string }) {
-    return this.prisma.accesorio.findMany({
+    return this.prisma.subAccesorio.findMany({
       where: {
         isActive: true,
         ...(filters?.nombre && {
